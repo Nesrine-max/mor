@@ -64,7 +64,7 @@ Supabase Free currently includes a small database, file storage, authentication,
 
 ### Automation and analytics
 
-- Use GitHub Actions to install dependencies, run tests, and build pull requests.
+- Use GitHub for versioned commits and pushes; add automated CI later only if the project needs it.
 - Keep deployment connected to Cloudflare Pages so only verified changes reach production.
 - Add Cloudflare Web Analytics after launch for privacy-friendly traffic and performance data. See [Cloudflare Web Analytics](https://developers.cloudflare.com/web-analytics/about/).
 - Use manual database exports until there is revenue for a paid backup plan. Never store customer exports in a public repository.
