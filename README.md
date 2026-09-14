@@ -1,6 +1,6 @@
 # MOR
 
-MOR is a dark, editorial-style clothing storefront for men and women. This repository contains the React storefront/admin UI plus a local Supabase migration and order-function foundation. The deployed data layer is not connected yet, so the current screens still expect a separate HTTP API for product, category, login, and order data.
+MOR is a dark, editorial-style clothing storefront for men and women. This repository contains the React storefront/admin UI plus a local Supabase migration and order-function foundation. The app supports Supabase when its public environment variables are configured and keeps the legacy HTTP API as a fallback; no external project is connected yet.
 
 ## What is included
 
@@ -18,7 +18,8 @@ The order flow records requests for real-life cash fulfilment. It does not proce
 
 - React 18 with Create React App and `react-scripts` 5.
 - React Router 6 for client-side routing.
-- Axios for API requests.
+- Axios for legacy API requests, with a Supabase data-layer adapter for production mode.
+- Supabase Auth and database/function access through `@supabase/supabase-js` when configured.
 - React Context for cart state and admin authentication state.
 - Plain CSS with Google Fonts (`Cormorant Garamond` and `Jost`).
 
@@ -35,15 +36,18 @@ The order flow records requests for real-life cash fulfilment. It does not proce
    npm install
    ```
 
-2. Configure the API URL. Create `.env.local` in the project root if the backend is not at the default address:
+2. Configure the data layer. Create `.env.local` in the project root:
 
    ```dotenv
-   REACT_APP_API_URL=http://localhost:5000/api
-   REACT_APP_CURRENCY=USD
-   REACT_APP_LOCALE=en-US
-   ```
+REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_CURRENCY=USD
+REACT_APP_LOCALE=en-US
+# Optional: use the Supabase data layer instead of the legacy API.
+REACT_APP_SUPABASE_URL=
+REACT_APP_SUPABASE_PUBLISHABLE_KEY=
+```
 
-   `src/api.js` uses `REACT_APP_API_URL` when it is set and otherwise defaults to `http://localhost:5000/api`.
+   When both Supabase values are set, `src/api.js` uses Supabase catalog/admin queries and Edge Functions, and `AdminAuthContext` uses Supabase Auth. If they are blank, `src/api.js` falls back to `REACT_APP_API_URL` or `http://localhost:5000/api`.
    `src/config.js` uses the currency and locale values for storefront and admin price formatting.
 
    Do not put secrets in `REACT_APP_*` variables. Create React App exposes them to the browser bundle.
@@ -54,7 +58,7 @@ The order flow records requests for real-life cash fulfilment. It does not proce
    npm start
    ```
 
-   The frontend is served at [http://localhost:3000](http://localhost:3000). The backend must be reachable at the configured API base URL for products, categories, and admin login to work.
+   The frontend is served at [http://localhost:3000](http://localhost:3000). A configured Supabase project or legacy backend is required for products, categories, orders, and admin login.
 
 ## Available scripts
 
@@ -83,9 +87,9 @@ The order flow records requests for real-life cash fulfilment. It does not proce
 
 The admin pages are protected by `AdminLayout`. An unauthenticated visitor is redirected to `/admin/login`.
 
-## API contract expected by the frontend
+## Data layer and API contract
 
-Axios requests use the configured base URL and the following relative endpoints:
+With Supabase variables configured, the frontend uses Postgres/RLS for catalogue and admin CRUD, Supabase Auth for admin login, and the `create-order`/`update-order-status` Edge Functions for trusted order writes. Without them, Axios requests use the configured base URL and the following relative endpoints:
 
 | Method | Endpoint | Used for |
 | --- | --- | --- |
@@ -144,7 +148,8 @@ public/
 src/
 ├── index.js                   React entry point and global stylesheet import
 ├── App.js                     Providers, router, storefront layout, and routes
-├── api.js                     Axios client, base URL, and auth interceptor
+├── api.js                     Conditional Supabase/legacy data adapter
+├── supabase.js                Supabase client and environment detection
 ├── components/
 │   ├── Footer.js              Store footer and navigation links
 │   ├── Navbar.js              Store navigation, category menus, and bag count
@@ -167,13 +172,13 @@ src/
     └── theme.css              Shared theme, layout, component, and responsive CSS
 ```
 
-The first implementation slice also adds `src/config.js`, `src/pages/OrderRequest.js`, `src/pages/admin/Orders.js`, `src/pages/admin/OrderForm.js`, and the `supabase/` database/function foundation.
+The implementation also adds `src/config.js`, `src/pages/OrderRequest.js`, `src/pages/admin/Orders.js`, `src/pages/admin/OrderForm.js`, and the `supabase/` database/function foundation.
 
 ## Current limitations and integration notes
 
-- The existing Axios API is still external to this repository; the Supabase schema and order function are foundations and are not connected to the React data layer yet.
-- The customer and admin order screens currently expect `/orders` API endpoints. They will show a backend error until the API/Supabase integration is deployed.
-- Stock reservation during confirmation/preparation and status-history writes still need to be connected to the admin status-update API.
+- No external Supabase project has been created or connected yet. The React data layer now supports Supabase when configured and preserves the legacy Axios fallback.
+- The customer and admin order screens require the deployed `create-order` and `update-order-status` functions when Supabase mode is enabled.
+- The local migration now includes transactional stock reservation/release and status-history writes, but it has not been executed against a project here.
 - Footer links for shipping, returns, size guide, about, and contact currently point to `#!` placeholders.
 - Several data loads intentionally have minimal error handling; the backend should return predictable errors and status codes.
 - There is no automated test suite in the repository yet.

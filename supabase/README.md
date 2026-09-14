@@ -7,8 +7,9 @@ This directory contains the first database and server-function foundation for MO
 - `migrations/0001_initial_schema.sql` creates profiles, categories, products, product images, orders, order items, and order status history.
 - The migration enables Row Level Security and gives public users catalogue reads while restricting administration to the admin role.
 - `functions/create-order/index.ts` validates customer/admin order requests and calls the trusted `create_order` database function.
+- `functions/update-order-status/index.ts` protects admin status changes and calls the transactional status/history/stock function.
 
-No payment provider is used. The order function only records a cash order request and its delivery method.
+No payment provider is used. The functions record cash order requests, delivery progress, status history, and stock transitions only.
 
 ## Setup when a Supabase project is available
 
@@ -25,15 +26,27 @@ No payment provider is used. The order function only records a cash order reques
    APP_ORIGIN=<deployed frontend origin>
    ```
 
-8. Deploy the function with `supabase functions deploy create-order`.
-9. Connect the frontend data layer to the Supabase project and function URL.
+8. Deploy both functions:
+
+   ```bash
+   supabase functions deploy create-order
+   supabase functions deploy update-order-status
+   ```
+
+9. Add the public project URL and publishable/anon key to the frontend environment:
+
+   ```text
+   REACT_APP_SUPABASE_URL=<project URL>
+   REACT_APP_SUPABASE_PUBLISHABLE_KEY=<publishable or anon key>
+   ```
+
+   When both variables exist, `src/api.js` and `AdminAuthContext` use Supabase. Without them, the legacy Axios API remains the fallback.
 
 The service-role key must only exist in the Edge Function environment. It must never be added to `.env.example`, React code, or a public deployment variable.
 
 ## Not finished yet
 
-- The current React app still uses the legacy Axios API client for catalogue/admin requests.
-- Supabase Auth has not yet replaced `AdminAuthContext`.
-- Admin status updates and order reads still require the `/orders` API layer to be connected.
-- Stock reservation on confirmation/preparation still needs a transactional status-update function.
-- Storage bucket SQL policies still need to be added after the bucket name is finalized.
+- No external Supabase project has been created or connected from this repository yet.
+- The migration and functions have not been executed or deployed against a Supabase project in this environment.
+- Product image storage bucket SQL policies still need to be added after the bucket name is finalized.
+- Real product data, images, currency, contact details, and delivery rules still need to be configured.

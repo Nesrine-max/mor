@@ -3,7 +3,11 @@ import { NavLink, Navigate, Outlet } from "react-router-dom";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
 export default function AdminLayout() {
-  const { isAuthenticated, email, logout } = useAdminAuth();
+  const { isAuthenticated, email, logout, loading } = useAdminAuth();
+
+  if (loading) {
+    return <div className="empty-state">Checking admin access...</div>;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;

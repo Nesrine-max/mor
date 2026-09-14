@@ -55,26 +55,31 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Added order-detail status-history rendering when the API includes history records.
 - Added `supabase/migrations/0001_initial_schema.sql` with catalogue, profiles, offline orders, order items, status history, indexes, RLS policies, and a trusted `create_order` database function.
 - Added `supabase/functions/create-order/index.ts` for server-side validation and cash-order creation without payment processing.
+- Added `supabase/functions/update-order-status/index.ts` and transactional SQL for protected status changes, status history, and stock reservation/release.
+- Added a conditional Supabase data layer in `src/api.js`, `src/supabase.js`, and `AdminAuthContext`; the legacy Axios API remains available when Supabase variables are blank.
+- Added `@supabase/supabase-js` and documented the public Supabase environment variables.
 - Added `supabase/README.md` describing how to apply and deploy the Supabase foundation.
 - Committed the implementation as `3fdf8fc2` and pushed it to `origin/main`.
 - Updated `README.md` to describe the new order flow and current integration boundary.
-- No external Supabase project has been created or connected yet.
+- No external Supabase project has been created or connected yet, so the Supabase path is not exercised against a live database.
 - No online payment or courier integration was added.
 
 ## Current repository facts
 
-The project is a frontend-only Create React App:
+The project is a Create React App frontend with local Supabase migration/function source:
 
 - Package name: `mor-shop-frontend`
 - React 18.3.1
 - React Router 6.26.2
 - Axios 1.7.7
+- `@supabase/supabase-js`
 - `react-scripts` 5.0.1
 - Start command: `npm start`
 - Build command: `npm run build`
 - Test command: `npm test`
 - Axios default API base: `http://localhost:5000/api`
 - Axios override: `REACT_APP_API_URL`
+- Supabase override: `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_PUBLISHABLE_KEY`
 - Frontend proxy declaration: `http://localhost:5000`
 
 Existing routes:
@@ -99,21 +104,21 @@ Existing browser storage keys:
 
 ## Important findings and known problems
 
-1. There is no backend source, database schema, or order API in this repository.
-2. The Supabase schema and order function exist locally but are not deployed or connected to the React data layer.
-3. The current React screens still call the legacy Axios backend. The new order screens need `/orders` endpoints or a Supabase client/function adapter.
+1. There is no deployed backend or connected Supabase project yet; the local schema and Edge Functions are now in the repository.
+2. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
+3. The Supabase migration and functions have not been applied/deployed or tested against a live project.
 4. The home page uses Picsum placeholder category images.
 5. Product images depend on URLs returned by the missing backend.
-6. Order totals are recalculated by the future backend function; the browser only sends item IDs, sizes, and quantities.
-7. Stock reservation during order confirmation/preparation is not implemented yet.
-8. Admin order status updates and status-history writes still depend on the missing `/orders/:id` API integration.
-9. The current admin context stores a custom token/email in localStorage; this should be replaced with managed Auth and database authorization.
+6. Order totals are recalculated by the local `create_order` database function; the browser only sends item IDs, sizes, and quantities.
+7. Stock reservation/release is implemented in the local `update_order_status` function but is not yet validated against a live database.
+8. Supabase admin status updates use the protected `update-order-status` function; legacy API mode still depends on `/orders/:id`.
+9. Supabase mode uses managed Auth and profile authorization; custom token/email storage remains only for legacy API mode.
 10. Admin product/category screens do not have comprehensive error states.
 11. Home, product detail, dashboard, and several other fetches have minimal or no visible error handling.
 12. Footer Help and Company links point to `#!` placeholders.
 13. The primary mobile navigation toggle is implemented; mega-menu behavior on touch devices still needs browser QA.
 14. Size selectors are now buttons; unavailable-size disabling and stock-aware selection still need implementation.
-15. `.env` and `node_modules` are removed from the Git index and ignored locally, but the index cleanup must be included in the eventual commit/review.
+15. `.env` and `node_modules` are removed from the Git index and ignored locally; the cleanup is included in the pushed implementation commit.
 16. There are no automated test files.
 
 ## Agreed target order model
@@ -137,24 +142,24 @@ Separate status dimensions:
 
 Order records must preserve product name, size, quantity, and price snapshots. A status history table should record field, old value, new value, actor, note, and time.
 
-Stock should be reserved at confirmation/preparation rather than at an unverified web request. The final rule must be implemented transactionally in the backend.
+Stock is reserved transactionally when an order moves into confirmation/preparation/ready/completed and released when a reserved order is cancelled. This rule exists in the local SQL function but still needs live-project validation.
 
 ## Recommended next implementation sequence
 
 1. Read `PROJECT_PLAN.md` and this file before changing code.
 2. Confirm operating country, currency, phone format, delivery/pickup rules, and store contact details.
-3. Add `.gitignore` and `.env.example`.
-4. Check the tracked `.env` contents for secrets without printing them; remove it from version control and rotate any exposed credentials if needed.
-5. Remove `node_modules` from version control without deleting the local folder.
-6. Create the Supabase project and `supabase/migrations/` structure.
+3. Done: `.gitignore` and `.env.example` are present.
+4. Done: the tracked `.env` was removed from Git without printing its contents; review/rotate any historical credential if one existed.
+5. Done: `node_modules` was removed from version control without deleting the local folder.
+6. Create the Supabase project and link it to the repository.
 7. Apply and validate the existing migration rather than creating a second duplicate schema.
-8. Enable RLS and create the admin role policies before connecting admin UI.
-9. Add Supabase Auth and replace the custom admin token flow.
-10. Connect the trusted order-creation function to the React order forms.
-11. Add a trusted status-update function or protected API for admin order changes and history.
-12. Add stock reservation/release behavior on status transitions.
+8. Enable RLS and create the admin role policies before using the connected admin UI.
+9. Done locally: Supabase Auth/profile authorization replaces the custom flow when Supabase variables are configured.
+10. Done locally: the trusted order-creation function is connected through the conditional data layer.
+11. Done locally: the trusted status-update function and history path are connected through the conditional data layer.
+12. Done locally: stock reservation/release behavior exists in the status transition function; validate it against the live project.
 13. Replace placeholder images and complete product/image management.
-14. Add tests, GitHub Actions, deployment configuration, analytics, and manual backup/export procedures.
+14. Add tests, deployment configuration, analytics, and manual backup/export procedures.
 15. Deploy to Cloudflare Pages and run the production launch checklist.
 
 ## Non-negotiable constraints for future work
@@ -180,7 +185,7 @@ npm test -- --watchAll=false --passWithNoTests
 No tests found, exiting with code 0
 ```
 
-The latest build completed successfully after the responsive navigation and order-history UI changes. The SQL migration has not yet been executed against a local or hosted Postgres/Supabase instance.
+The latest build completed successfully after the conditional Supabase data-layer/Auth adapter and status-update function changes. The SQL migration has not yet been executed against a local or hosted Postgres/Supabase instance.
 
 ### 2026-09-14 - First implementation slice verified
 
@@ -197,6 +202,16 @@ The latest build completed successfully after the responsive navigation and orde
 - Committed the implementation and pushed it to GitHub; the implementation commit is `3fdf8fc2`.
 - A temporary CI workflow and build-only dependency were added while interpreting the GitHub request, then removed after the user clarified that GitHub should only be used for commits/pushes.
 - The cleanup commit removes `.github/workflows/` and the CI-only `yaml` dependency while preserving the application, Supabase foundation, documentation, and repository hygiene changes.
+
+### 2026-09-14 - Supabase data-layer slice
+
+- Added `src/supabase.js` and conditional Supabase/legacy behavior in `src/api.js`.
+- Added Supabase Auth session restoration and admin-profile authorization while retaining legacy login fallback.
+- Connected catalogue reads, product/category CRUD, order reads, customer order creation, and admin status updates to Supabase APIs/functions.
+- Added `update-order-status` Edge Function and transactional SQL for status history, stock reservation, stock release, and inventory state.
+- Updated README and Supabase setup docs with public frontend variables and server-only secret rules.
+- Verified `npm test -- --watchAll=false --passWithNoTests`, `npm run build`, and `git diff --check` locally.
+- Blocker: no Supabase project/CLI is available in this environment, so migration/function deployment and live RLS validation remain pending.
 
 After implementation begins, record every relevant command and result here. A failed check must remain documented until fixed.
 

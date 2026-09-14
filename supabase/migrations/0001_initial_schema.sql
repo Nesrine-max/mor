@@ -136,6 +136,10 @@ create table public.orders (
     check (delivery_status in ('not_required', 'awaiting_assignment', 'assigned', 'out_for_delivery', 'delivered', 'failed', 'returned')),
   cash_status text not null default 'cash_outstanding'
     check (cash_status in ('cash_outstanding', 'cash_collected', 'partially_collected')),
+  inventory_status text not null default 'not_reserved'
+    check (inventory_status in ('not_reserved', 'reserved', 'consumed', 'released')),
+  inventory_reserved_at timestamptz,
+  inventory_released_at timestamptz,
   subtotal_minor integer not null default 0 check (subtotal_minor >= 0),
   delivery_fee_minor integer not null default 0 check (delivery_fee_minor >= 0),
   total_minor integer not null default 0 check (total_minor >= 0),
@@ -494,3 +498,155 @@ $$;
 
 revoke all on function public.create_order(text, text, text, text, text, text, text, jsonb, uuid) from public, anon, authenticated;
 grant execute on function public.create_order(text, text, text, text, text, text, text, jsonb, uuid) to service_role;
+
+-- Status changes, stock reservation/release, and history are kept in one transaction.
+create or replace function public.update_order_status(
+  p_order_id uuid,
+  p_order_status text default null,
+  p_delivery_status text default null,
+  p_cash_status text default null,
+  p_note text default null,
+  p_changed_by uuid default null
+)
+returns jsonb
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_order public.orders%rowtype;
+  v_item public.order_items%rowtype;
+  v_product public.products%rowtype;
+  v_next_order_status text;
+  v_next_delivery_status text;
+  v_next_cash_status text;
+begin
+  select * into v_order
+  from public.orders
+  where id = p_order_id
+  for update;
+
+  if not found then
+    raise exception using message = 'Order not found', errcode = '22023';
+  end if;
+
+  if p_order_status is not null and p_order_status not in ('pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled') then
+    raise exception using message = 'Invalid order status', errcode = '22023';
+  end if;
+
+  if p_delivery_status is not null and p_delivery_status not in ('not_required', 'awaiting_assignment', 'assigned', 'out_for_delivery', 'delivered', 'failed', 'returned') then
+    raise exception using message = 'Invalid delivery status', errcode = '22023';
+  end if;
+
+  if p_cash_status is not null and p_cash_status not in ('cash_outstanding', 'cash_collected', 'partially_collected') then
+    raise exception using message = 'Invalid cash status', errcode = '22023';
+  end if;
+
+  v_next_order_status := coalesce(p_order_status, v_order.order_status);
+  v_next_delivery_status := coalesce(p_delivery_status, v_order.delivery_status);
+  v_next_cash_status := coalesce(p_cash_status, v_order.cash_status);
+
+  if v_order.order_status = 'completed' and v_next_order_status <> 'completed' then
+    raise exception using message = 'Completed orders cannot be moved backwards', errcode = '22023';
+  end if;
+
+  if v_order.order_status = 'cancelled' and v_next_order_status <> 'cancelled' then
+    raise exception using message = 'Cancelled orders cannot be reopened automatically', errcode = '22023';
+  end if;
+
+  if v_order.delivery_type = 'pickup' and v_next_delivery_status <> 'not_required' then
+    raise exception using message = 'Pickup orders do not have a delivery status', errcode = '22023';
+  end if;
+
+  if v_order.inventory_status = 'not_reserved'
+    and v_next_order_status in ('confirmed', 'preparing', 'ready', 'completed') then
+    for v_item in
+      select * from public.order_items where order_id = v_order.id
+    loop
+      if v_item.product_id is null then
+        raise exception using message = 'An order item no longer has a product reference', errcode = '22023';
+      end if;
+
+      select * into v_product
+      from public.products
+      where id = v_item.product_id
+      for update;
+
+      if not found or v_product.stock_quantity < v_item.quantity then
+        raise exception using message = 'There is not enough stock to confirm this order', errcode = '22023';
+      end if;
+
+      update public.products
+      set stock_quantity = stock_quantity - v_item.quantity
+      where id = v_item.product_id;
+    end loop;
+
+    update public.orders
+    set inventory_status = case when v_next_order_status = 'completed' then 'consumed' else 'reserved' end,
+        inventory_reserved_at = now()
+    where id = v_order.id;
+  elsif v_order.inventory_status = 'reserved' and v_next_order_status = 'cancelled' then
+    for v_item in
+      select * from public.order_items where order_id = v_order.id
+    loop
+      if v_item.product_id is not null then
+        update public.products
+        set stock_quantity = stock_quantity + v_item.quantity
+        where id = v_item.product_id;
+      end if;
+    end loop;
+
+    update public.orders
+    set inventory_status = 'released',
+        inventory_released_at = now()
+    where id = v_order.id;
+  elsif v_order.inventory_status = 'reserved' and v_next_order_status = 'completed' then
+    update public.orders
+    set inventory_status = 'consumed'
+    where id = v_order.id;
+  elsif v_order.inventory_status = 'not_reserved' and v_next_order_status = 'cancelled' then
+    update public.orders
+    set inventory_status = 'released',
+        inventory_released_at = now()
+    where id = v_order.id;
+  end if;
+
+  update public.orders
+  set order_status = v_next_order_status,
+      delivery_status = v_next_delivery_status,
+      cash_status = v_next_cash_status,
+      confirmed_at = case
+        when v_next_order_status in ('confirmed', 'preparing', 'ready', 'completed') and confirmed_at is null then now()
+        else confirmed_at
+      end,
+      completed_at = case
+        when v_next_order_status = 'completed' then coalesce(completed_at, now())
+        else completed_at
+      end,
+      cancelled_at = case
+        when v_next_order_status = 'cancelled' then coalesce(cancelled_at, now())
+        else cancelled_at
+      end
+  where id = v_order.id;
+
+  if v_next_order_status <> v_order.order_status then
+    insert into public.order_status_history (order_id, changed_by, field_name, old_value, new_value, note)
+    values (v_order.id, p_changed_by, 'order_status', v_order.order_status, v_next_order_status, p_note);
+  end if;
+
+  if v_next_delivery_status <> v_order.delivery_status then
+    insert into public.order_status_history (order_id, changed_by, field_name, old_value, new_value, note)
+    values (v_order.id, p_changed_by, 'delivery_status', v_order.delivery_status, v_next_delivery_status, p_note);
+  end if;
+
+  if v_next_cash_status <> v_order.cash_status then
+    insert into public.order_status_history (order_id, changed_by, field_name, old_value, new_value, note)
+    values (v_order.id, p_changed_by, 'cash_status', v_order.cash_status, v_next_cash_status, p_note);
+  end if;
+
+  select * into v_order from public.orders where id = v_order.id;
+  return jsonb_build_object('order', to_jsonb(v_order));
+end;
+$$;
+
+revoke all on function public.update_order_status(uuid, text, text, text, text, uuid) from public, anon, authenticated;
+grant execute on function public.update_order_status(uuid, text, text, text, text, uuid) to service_role;

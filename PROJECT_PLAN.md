@@ -2,7 +2,7 @@
 
 ## 1. Product definition
 
-Implementation status: Phase 0 is partially implemented and the initial Phase 1 database/order foundation has been added. The React order screens are present, but no Supabase project is connected and the app is not production-ready yet.
+Implementation status: Phase 0 is implemented, the local Phase 1 database/order foundation exists, and the Phase 2 Supabase data-layer/Auth adapter is now wired behind environment flags. No Supabase project is connected and the app is not production-ready yet.
 
 MOR should become a customer-facing clothing catalogue and an offline order-operations system.
 
@@ -77,13 +77,13 @@ The repository is currently a frontend-only Create React App project:
 - Storefront routes exist for home, shop, product details, and cart.
 - Admin routes exist for login, dashboard, products, categories, order tracking, and manual order creation.
 - Cart state is persisted in `localStorage` under `mor_cart`.
-- Admin token/email state is persisted in `localStorage` under `mor_admin_token` and `mor_admin_email`.
-- Axios expects an external API at `REACT_APP_API_URL` or `http://localhost:5000/api`.
+- Legacy admin token/email state is persisted in `localStorage` under `mor_admin_token` and `mor_admin_email`; Supabase mode uses managed Auth sessions.
+- Supabase mode uses `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_PUBLISHABLE_KEY`; otherwise Axios expects `REACT_APP_API_URL` or `http://localhost:5000/api`.
 - No deployed backend or connected database exists yet. A local Supabase migration and order Edge Function foundation now exists, but it has not been applied to a project.
 - `Home.js` uses placeholder Picsum category images.
 - `Cart.js` now links to a cash-only order-request form; no online checkout or payment handling is present.
 - Prices use configurable currency/locale settings, and delivery is displayed as coordinated separately.
-- The initial implementation fixed the `Shop.js` route/query mismatch; the future backend must now support the `gender` and `category` request parameters.
+- The initial implementation fixed the `Shop.js` route/query mismatch; both the Supabase adapter and legacy API path support `gender` and `category` filters.
 - Footer help/company links are placeholders.
 - `.env` and `node_modules` were removed from the Git index and are now ignored locally; the staged index cleanup must be included in the eventual commit/review.
 
@@ -156,7 +156,7 @@ The first version should not add refund logic unless the real-life process requi
 
 ### Stock behavior
 
-Reserve stock when an order becomes `confirmed` or `preparing`, not when an unverified web request is created. Release the reservation if the order is cancelled before fulfillment. This prevents abandoned requests from blocking products while still reducing overselling.
+Reserve stock when an order becomes `confirmed`, `preparing`, `ready`, or `completed`, not when an unverified web request is created. Release the reservation if the order is cancelled before fulfillment. This prevents abandoned requests from blocking products while still reducing overselling.
 
 The final stock rule must be enforced in a database transaction or trusted Edge Function, not only in React.
 
@@ -459,24 +459,24 @@ Complete this before connecting deployment:
 ### Phase 1: Supabase foundation
 
 - [ ] Create the Supabase project.
-- [ ] Initialize the Supabase folder and migrations.
-- [ ] Create tables, indexes, constraints, and status checks.
+- [x] Initialize the Supabase folder and migrations locally.
+- [x] Create tables, indexes, constraints, and status checks locally.
 - [ ] Seed categories and sample products.
 - [ ] Configure the admin Auth user.
 - [ ] Create the admin role/profile policy.
 - [ ] Enable and test RLS.
 - [ ] Create the product image bucket and policies.
-- [ ] Create the trusted order function.
-- [ ] Add local development environment documentation.
+- [x] Create the trusted order and status-update functions locally.
+- [x] Add local development environment documentation.
 
 **Exit condition:** catalog reads work, admin writes are protected, and a test order can be created with correct totals and item snapshots.
 
 ### Phase 2: frontend data-layer migration
 
-- [ ] Add the Supabase client module.
-- [ ] Replace custom admin login/token handling with Supabase Auth.
-- [ ] Update `AdminAuthContext` to restore and observe the Supabase session.
-- [ ] Replace or refactor `api.js` around the chosen Supabase data access layer.
+- [x] Add the Supabase client module.
+- [x] Replace custom admin login/token handling with Supabase Auth when Supabase mode is enabled.
+- [x] Update `AdminAuthContext` to restore and observe the Supabase session.
+- [x] Replace or refactor `api.js` around the chosen Supabase data access layer, with legacy fallback.
 - [ ] Keep cart persistence but add current-stock validation.
 - [ ] Add shared currency, date, and status formatting utilities.
 - [ ] Add shared loading/error helpers.
