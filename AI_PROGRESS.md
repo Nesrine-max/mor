@@ -59,6 +59,7 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Added `supabase/README.md` describing how to apply and deploy the Supabase foundation.
 - Committed the implementation as `3fdf8fc2` and pushed it to `origin/main`.
 - Fixed the lockfile after the first GitHub CI run found `npm ci` was not reproducible; a clean local `npm ci` now succeeds.
+- The second CI run showed GitHub's npm also requires the optional `yaml` peer from the transitive Tailwind/PostCSS toolchain, so `yaml@^2.9.1` is now explicit in `devDependencies`.
 - Updated `README.md` to describe the new order flow and current integration boundary.
 - No external Supabase project has been created or connected yet.
 - No online payment or courier integration was added.
@@ -199,7 +200,7 @@ The latest build completed successfully after the responsive navigation and orde
 - Added `.github/workflows/ci.yml` for clean dependency installation, tests, and production builds.
 - The first CI run exposed a stale lockfile; regenerated `package-lock.json` and verified `npm ci --ignore-scripts` locally.
 - Local clean-install tests and production build both pass after the lockfile repair.
-- The lockfile repair still needs to be committed and pushed, then the new GitHub Actions run must be confirmed green.
+- The explicit peer dependency repair still needs to be committed and pushed, then the new GitHub Actions run must be confirmed green.
 
 After implementation begins, record every relevant command and result here. A failed check must remain documented until fixed.
 
