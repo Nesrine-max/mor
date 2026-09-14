@@ -39,6 +39,7 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 ### Initial implementation slice
 
 - Added `.gitignore` and `.env.example`.
+- Added `.github/workflows/ci.yml` to run a clean `npm ci`, tests, and production build on `main` pushes and pull requests.
 - Removed the tracked `.env` and tracked `node_modules` entries from the Git index without deleting the local files.
 - Added `public/_redirects` for SPA deep-link handling on static hosting.
 - Added `src/config.js` for configurable locale/currency formatting and offline fulfilment labels.
@@ -56,6 +57,8 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Added `supabase/migrations/0001_initial_schema.sql` with catalogue, profiles, offline orders, order items, status history, indexes, RLS policies, and a trusted `create_order` database function.
 - Added `supabase/functions/create-order/index.ts` for server-side validation and cash-order creation without payment processing.
 - Added `supabase/README.md` describing how to apply and deploy the Supabase foundation.
+- Committed the implementation as `3fdf8fc2` and pushed it to `origin/main`.
+- Fixed the lockfile after the first GitHub CI run found `npm ci` was not reproducible; a clean local `npm ci` now succeeds.
 - Updated `README.md` to describe the new order flow and current integration boundary.
 - No external Supabase project has been created or connected yet.
 - No online payment or courier integration was added.
@@ -189,6 +192,14 @@ The latest build completed successfully after the responsive navigation and orde
 - Confirmed there is no `psql` or Supabase CLI available in this environment, so the migration and Edge Function remain unexecuted/un-deployed.
 - Remaining integration boundary: the React app still uses the legacy Axios API, while the local Supabase schema/function foundation is not connected to it.
 - Next exact task: create/configure the free Supabase project, apply the migration, replace custom admin token login with Supabase Auth, then wire catalog/order reads and protected status updates to the deployed data layer.
+
+### 2026-09-14 - GitHub repository and CI
+
+- Confirmed the public remote is `https://github.com/Nesrine-max/mor`, with `main` as the default branch.
+- Added `.github/workflows/ci.yml` for clean dependency installation, tests, and production builds.
+- The first CI run exposed a stale lockfile; regenerated `package-lock.json` and verified `npm ci --ignore-scripts` locally.
+- Local clean-install tests and production build both pass after the lockfile repair.
+- The lockfile repair still needs to be committed and pushed, then the new GitHub Actions run must be confirmed green.
 
 After implementation begins, record every relevant command and result here. A failed check must remain documented until fixed.
 
