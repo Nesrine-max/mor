@@ -2,6 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
 import { useCart } from "../context/CartContext";
+import { formatPrice } from "../config";
+
+function parseSizes(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -13,14 +22,14 @@ export default function ProductDetail() {
   useEffect(() => {
     api.get(`/products/${id}`).then((res) => {
       setProduct(res.data);
-      const sizes = (res.data.sizes || "").split(",").filter(Boolean);
+      const sizes = parseSizes(res.data.sizes);
       setSize(sizes[0]);
     });
   }, [id]);
 
   if (!product) return <div className="empty-state">Loading...</div>;
 
-  const sizes = (product.sizes || "").split(",").filter(Boolean);
+  const sizes = parseSizes(product.sizes);
 
   function handleAdd() {
     addToCart(product, size, 1);
@@ -37,7 +46,7 @@ export default function ProductDetail() {
         <div>
           <div className="product-category">{product.category_name}</div>
           <h1 className="product-detail-name">{product.name}</h1>
-          <div className="product-detail-price">${Number(product.price).toFixed(2)}</div>
+          <div className="product-detail-price">{formatPrice(product.price)}</div>
           <p className="product-detail-desc">{product.description}</p>
 
           <div>
@@ -45,13 +54,14 @@ export default function ProductDetail() {
               <label>Select Size</label>
               <div className="size-selector">
                 {sizes.map((s) => (
-                  <div
-                    key={s}
-                    className={`size-box ${size === s ? "active" : ""}`}
-                    onClick={() => setSize(s)}
+                    <button
+                      type="button"
+                      key={s}
+                      className={`size-box ${size === s ? "active" : ""}`}
+                      onClick={() => setSize(s)}
                   >
                     {s}
-                  </div>
+                    </button>
                 ))}
               </div>
             </div>

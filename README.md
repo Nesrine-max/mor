@@ -1,6 +1,6 @@
 # MOR
 
-MOR is a dark, editorial-style clothing storefront for men and women. This repository contains the React frontend only: the customer shopping experience and a token-authenticated admin console. Product, category, and login data are supplied by a separate HTTP API.
+MOR is a dark, editorial-style clothing storefront for men and women. This repository contains the React storefront/admin UI plus a local Supabase migration and order-function foundation. The deployed data layer is not connected yet, so the current screens still expect a separate HTTP API for product, category, login, and order data.
 
 ## What is included
 
@@ -8,10 +8,11 @@ MOR is a dark, editorial-style clothing storefront for men and women. This repos
 - Women, men, and sportswear navigation.
 - Product detail pages with size selection and add-to-bag behavior.
 - A browser-persisted shopping bag with quantity controls and subtotal calculation.
-- Admin login, dashboard statistics, product CRUD, and category CRUD.
+- Cash-only order requests from the storefront.
+- Admin login, dashboard statistics, product/category CRUD, order tracking, and manual offline-order creation.
 - Responsive styling with a black, burgundy, cream, and muted-gray visual system.
 
-Checkout, payment processing, order creation, shipping, and returns are not implemented in this frontend.
+The order flow records requests for real-life cash fulfilment. It does not process online payments or integrate a delivery provider.
 
 ## Stack
 
@@ -24,7 +25,7 @@ Checkout, payment processing, order creation, shipping, and returns are not impl
 ## Requirements
 
 - Node.js and npm.
-- A running MOR backend API. No backend source or database is included in this repository.
+- A running MOR backend API for the current Axios mode, or a configured Supabase project after the migration/data-layer work is completed.
 
 ## Getting started
 
@@ -38,9 +39,12 @@ Checkout, payment processing, order creation, shipping, and returns are not impl
 
    ```dotenv
    REACT_APP_API_URL=http://localhost:5000/api
+   REACT_APP_CURRENCY=USD
+   REACT_APP_LOCALE=en-US
    ```
 
    `src/api.js` uses `REACT_APP_API_URL` when it is set and otherwise defaults to `http://localhost:5000/api`.
+   `src/config.js` uses the currency and locale values for storefront and admin price formatting.
 
    Do not put secrets in `REACT_APP_*` variables. Create React App exposes them to the browser bundle.
 
@@ -69,10 +73,13 @@ Checkout, payment processing, order creation, shipping, and returns are not impl
 | `/shop/:gender` | Storefront | Product listing entry point for women, men, or unisex/sportswear navigation. |
 | `/product/:id` | Storefront | Product details, size selection, and add to bag. |
 | `/cart` | Storefront | View, update, remove, or clear bag items. |
+| `/order` | Storefront | Submit a cash order request with delivery or pickup details. |
 | `/admin/login` | Admin | Submit email/password credentials to the backend. |
 | `/admin/dashboard` | Admin | Product, category, stock, featured-item, and recent-product summary. |
 | `/admin/products` | Admin | Create, edit, and delete products. |
 | `/admin/categories` | Admin | Create, edit, and delete categories. |
+| `/admin/orders` | Admin | Filter orders and update order, delivery, and cash statuses. |
+| `/admin/orders/new` | Admin | Create an order received through an offline channel. |
 
 The admin pages are protected by `AdminLayout`. An unauthenticated visitor is redirected to `/admin/login`.
 
@@ -87,6 +94,9 @@ Axios requests use the configured base URL and the following relative endpoints:
 | `GET` | `/products/:id` | Product detail page. |
 | `POST` | `/auth/login` | Admin login with `{ email, password }`. The response must contain `token` and `email`. |
 | `GET` | `/categories` | Store navigation, dashboard, and product forms. |
+| `POST` | `/orders` | Create a website or admin-created cash order request. The backend must validate prices and stock. |
+| `GET` | `/orders` | Admin order queue and dashboard insights. |
+| `PUT` | `/orders/:id` | Admin order, delivery, or cash status update. |
 | `POST` | `/products` | Create a product. |
 | `PUT` | `/products/:id` | Update a product. |
 | `DELETE` | `/products/:id` | Delete a product. |
@@ -119,7 +129,7 @@ The backend remains responsible for deciding which endpoints require that token.
 - `clearCart()`
 - `total` and `count`
 
-Quantities at or below zero remove a line. The cart total is calculated in the browser, and the checkout button currently displays a placeholder alert.
+Quantities at or below zero remove a line. The cart total is an estimate for review; the backend must recalculate the final order total before saving it. The order page explains that payment is cash in real life and delivery is coordinated separately.
 
 ### Admin authentication
 
@@ -157,11 +167,13 @@ src/
     └── theme.css              Shared theme, layout, component, and responsive CSS
 ```
 
+The first implementation slice also adds `src/config.js`, `src/pages/OrderRequest.js`, `src/pages/admin/Orders.js`, `src/pages/admin/OrderForm.js`, and the `supabase/` database/function foundation.
+
 ## Current limitations and integration notes
 
-- The backend is external to this repository; there is no local API or database setup command.
-- The route is declared as `/shop/:gender`, but `Shop.js` reads a `categoryName` route parameter. As currently wired, the navigation links therefore fall back to `GET /products`, and the `gender` path segment and `?category=...` query are not applied by the shop page. The route and query handling should be aligned if filtered listings are required.
-- The checkout button is presentational only and does not create an order or process payment.
+- The existing Axios API is still external to this repository; the Supabase schema and order function are foundations and are not connected to the React data layer yet.
+- The customer and admin order screens currently expect `/orders` API endpoints. They will show a backend error until the API/Supabase integration is deployed.
+- Stock reservation during confirmation/preparation and status-history writes still need to be connected to the admin status-update API.
 - Footer links for shipping, returns, size guide, about, and contact currently point to `#!` placeholders.
 - Several data loads intentionally have minimal error handling; the backend should return predictable errors and status codes.
 - There is no automated test suite in the repository yet.

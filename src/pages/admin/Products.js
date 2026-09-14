@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
+import { formatPrice } from "../../config";
 
 const EMPTY_FORM = {
   id: null,
@@ -214,7 +215,7 @@ export default function AdminProducts() {
               <td>{p.name}</td>
               <td>{p.category_name}</td>
               <td style={{ textTransform: "capitalize" }}>{p.gender}</td>
-              <td>${Number(p.price).toFixed(2)}</td>
+              <td>{formatPrice(p.price)}</td>
               <td>{p.stock}</td>
               <td>
                 <button className="icon-btn" onClick={() => openEdit(p)}>

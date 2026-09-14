@@ -28,10 +28,10 @@ export function CartProvider({ children }) {
         {
           id: product.id,
           name: product.name,
-          price: product.price,
+          price: Number(product.price),
           image_url: product.image_url,
           size,
-          qty,
+          qty: Number(qty),
         },
       ];
     });
@@ -53,8 +53,8 @@ export function CartProvider({ children }) {
     setItems([]);
   }
 
-  const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const count = items.reduce((sum, i) => sum + i.qty, 0);
+  const total = items.reduce((sum, i) => sum + Number(i.price) * Number(i.qty), 0);
+  const count = items.reduce((sum, i) => sum + Number(i.qty), 0);
 
   return (
     <CartContext.Provider

@@ -2,6 +2,8 @@
 
 ## 1. Product definition
 
+Implementation status: Phase 0 is partially implemented and the initial Phase 1 database/order foundation has been added. The React order screens are present, but no Supabase project is connected and the app is not production-ready yet.
+
 MOR should become a customer-facing clothing catalogue and an offline order-operations system.
 
 Customers can browse products and submit order requests from the website. Administrators can also create orders received through WhatsApp, phone calls, Instagram, walk-ins, or any other offline channel. All orders enter the same system.
@@ -73,17 +75,17 @@ The repository is currently a frontend-only Create React App project:
 
 - React 18, React Router 6, Axios, and `react-scripts` 5.
 - Storefront routes exist for home, shop, product details, and cart.
-- Admin routes exist for login, dashboard, products, and categories.
+- Admin routes exist for login, dashboard, products, categories, order tracking, and manual order creation.
 - Cart state is persisted in `localStorage` under `mor_cart`.
 - Admin token/email state is persisted in `localStorage` under `mor_admin_token` and `mor_admin_email`.
 - Axios expects an external API at `REACT_APP_API_URL` or `http://localhost:5000/api`.
-- No backend, database, order model, deployment configuration, or test suite exists in this repository.
+- No deployed backend or connected database exists yet. A local Supabase migration and order Edge Function foundation now exists, but it has not been applied to a project.
 - `Home.js` uses placeholder Picsum category images.
-- `Cart.js` has a placeholder checkout alert.
-- Prices and shipping are currently displayed as dollars and free shipping is hard-coded.
-- `Shop.js` reads `categoryName`, while the route declares `:gender`; current gender/category filtering is therefore not wired correctly.
+- `Cart.js` now links to a cash-only order-request form; no online checkout or payment handling is present.
+- Prices use configurable currency/locale settings, and delivery is displayed as coordinated separately.
+- The initial implementation fixed the `Shop.js` route/query mismatch; the future backend must now support the `gender` and `category` request parameters.
 - Footer help/company links are placeholders.
-- `.env` and `node_modules` are currently tracked and there is no `.gitignore`; this must be corrected before public deployment.
+- `.env` and `node_modules` were removed from the Git index and are now ignored locally; the staged index cleanup must be included in the eventual commit/review.
 
 ## 5. User experiences
 
@@ -600,4 +602,3 @@ Only after the basic offline workflow is reliable:
 - Reviews and wishlists.
 - Custom domain.
 - Paid backups or a more reliable production database plan.
-

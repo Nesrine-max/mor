@@ -25,6 +25,9 @@ export default function AdminLayout() {
           <NavLink to="/admin/categories" className={({ isActive }) => (isActive ? "active" : "")}>
             Categories
           </NavLink>
+          <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? "active" : "")}>
+            Orders
+          </NavLink>
         </nav>
         <div style={{ marginTop: 40, fontSize: 12, color: "var(--text-muted)" }}>
           <div style={{ marginBottom: 10 }}>{email}</div>

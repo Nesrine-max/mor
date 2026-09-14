@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { formatPrice, storeConfig } from "../config";
 
 export default function Cart() {
   const { items, updateQty, removeFromCart, total, clearCart } = useCart();
@@ -27,7 +28,7 @@ export default function Cart() {
             <div>
               <div className="product-name">{item.name}</div>
               <div className="product-category">Size: {item.size}</div>
-              <div className="product-price">${item.price.toFixed(2)}</div>
+              <div className="product-price">{formatPrice(item.price)}</div>
             </div>
             <div className="qty-control">
               <button onClick={() => updateQty(item.id, item.size, item.qty - 1)}>-</button>
@@ -44,19 +45,22 @@ export default function Cart() {
       <div className="cart-summary">
         <div className="cart-summary-row">
           <span>Subtotal</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatPrice(total)}</span>
         </div>
         <div className="cart-summary-row">
-          <span>Shipping</span>
-          <span>Free</span>
+          <span>Delivery</span>
+          <span>Confirmed separately</span>
         </div>
         <div className="cart-summary-row total">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatPrice(total)}</span>
         </div>
-        <button className="btn" style={{ width: "100%", marginTop: 10 }} onClick={() => alert("Checkout flow goes here 🙂")}>
-          Checkout
-        </button>
+        <Link to="/order" className="btn" style={{ width: "100%", marginTop: 10, textAlign: "center" }}>
+          Place Order Request
+        </Link>
+        <p className="cart-note">
+          {storeConfig.cashPaymentLabel}. {storeConfig.deliveryLabel}.
+        </p>
         <button
           className="btn btn-outline"
           style={{ width: "100%", marginTop: 10 }}

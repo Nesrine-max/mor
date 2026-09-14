@@ -5,7 +5,12 @@ import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
   const [categories, setCategories] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { count } = useCart();
+
+  function closeMenu() {
+    setMenuOpen(false);
+  }
 
   useEffect(() => {
     api.get("/categories").then((res) => setCategories(res.data)).catch(() => {});
@@ -18,7 +23,17 @@ export default function Navbar() {
           M<span>O</span>R
         </Link>
 
-        <nav className="nav-links">
+        <button
+          className="mobile-menu-toggle"
+          type="button"
+          aria-expanded={menuOpen}
+          aria-controls="primary-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? "Close" : "Menu"}
+        </button>
+
+        <nav id="primary-navigation" className={`nav-links ${menuOpen ? "mobile-open" : ""}`} onClick={closeMenu}>
           <div className="nav-item-has-menu" style={{ position: "relative" }}>
             <NavLink to="/shop/women" className={({ isActive }) => (isActive ? "active" : "")}>
               Women
