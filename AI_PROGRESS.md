@@ -200,7 +200,8 @@ The latest build completed successfully after the responsive navigation and orde
 - Added `.github/workflows/ci.yml` for clean dependency installation, tests, and production builds.
 - The first CI run exposed a stale lockfile; regenerated `package-lock.json` and verified `npm ci --ignore-scripts` locally.
 - Local clean-install tests and production build both pass after the lockfile repair.
-- The explicit peer dependency repair still needs to be committed and pushed, then the new GitHub Actions run must be confirmed green.
+- The explicit peer dependency repair was committed as `6a863fd8` and pushed; GitHub CI run `34898515995` passed clean install, tests, and production build.
+- The successful CI run emitted only a non-blocking action-runtime deprecation warning, so the workflow is being updated from checkout/setup-node v4 to v5 before the final verification.
 
 After implementation begins, record every relevant command and result here. A failed check must remain documented until fixed.
 
