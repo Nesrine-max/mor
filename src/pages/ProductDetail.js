@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../api";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../config";
@@ -17,15 +17,34 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [size, setSize] = useState(null);
   const [added, setAdded] = useState(false);
+  const [error, setError] = useState("");
   const { addToCart } = useCart();
 
   useEffect(() => {
-    api.get(`/products/${id}`).then((res) => {
-      setProduct(res.data);
-      const sizes = parseSizes(res.data.sizes);
-      setSize(sizes[0]);
-    });
+    setProduct(null);
+    setError("");
+    api
+      .get(`/products/${id}`)
+      .then((res) => {
+        setProduct(res.data);
+        const sizes = parseSizes(res.data.sizes);
+        setSize(sizes[0]);
+      })
+      .catch((err) => {
+        console.error("Error loading product:", err);
+        setError("This product is unavailable until the catalogue is connected.");
+      });
   }, [id]);
+
+  if (error) {
+    return (
+      <main className="container">
+        <div className="empty-state error-state">
+          {error} <Link to="/shop/women">Return to the collection</Link>
+        </div>
+      </main>
+    );
+  }
 
   if (!product) return <div className="empty-state">Loading...</div>;
 

@@ -11,9 +11,17 @@ const FEATURED_CATEGORIES = [
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
+  const [catalogError, setCatalogError] = useState("");
 
   useEffect(() => {
-    api.get("/products", { params: { featured: 1 } }).then((res) => setFeatured(res.data.slice(0, 8)));
+    api
+      .get("/products", { params: { featured: 1 } })
+      .then((res) => setFeatured(Array.isArray(res.data) ? res.data.slice(0, 8) : []))
+      .catch((err) => {
+        console.error("Error loading featured products:", err);
+        setFeatured([]);
+        setCatalogError("Featured products will appear once the catalogue is connected.");
+      });
   }, []);
 
   return (
@@ -48,11 +56,15 @@ export default function Home() {
       <section className="container">
         <h2 className="section-title">Featured Pieces</h2>
         <p className="section-subtitle">Hand-picked for the new season</p>
-        <div className="product-grid">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {catalogError && <div className="empty-state error-state">{catalogError}</div>}
+        {!catalogError && featured.length === 0 && <div className="empty-state">Loading featured pieces...</div>}
+        {featured.length > 0 && (
+          <div className="product-grid">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );
