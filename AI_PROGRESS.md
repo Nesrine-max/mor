@@ -201,7 +201,8 @@ The latest build completed successfully after the responsive navigation and orde
 - The first CI run exposed a stale lockfile; regenerated `package-lock.json` and verified `npm ci --ignore-scripts` locally.
 - Local clean-install tests and production build both pass after the lockfile repair.
 - The explicit peer dependency repair was committed as `6a863fd8` and pushed; GitHub CI run `34898515995` passed clean install, tests, and production build.
-- The successful CI run emitted only a non-blocking action-runtime deprecation warning, so the workflow is being updated from checkout/setup-node v4 to v5 before the final verification.
+- Updated checkout/setup-node to v5 in commit `8b10ae93`; final CI run `34898624075` passed without the previous action-runtime warning.
+- GitHub `main` now contains the implementation, reproducible install fix, and current CI workflow.
 
 After implementation begins, record every relevant command and result here. A failed check must remain documented until fixed.
 
