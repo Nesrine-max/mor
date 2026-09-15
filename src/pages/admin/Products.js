@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api";
+import api, { uploadProductImage } from "../../api";
 import { formatPrice } from "../../config";
+import { isSupabaseConfigured } from "../../supabase";
 
 const EMPTY_FORM = {
   id: null,
@@ -20,43 +21,120 @@ export default function AdminProducts() {
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  function loadProducts() {
-    api.get("/products").then((res) => setProducts(res.data));
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
+  async function loadProducts() {
+    setLoading(true);
+    try {
+      const res = await api.get("/products");
+      setProducts(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Could not load products.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     loadProducts();
-    api.get("/categories").then((res) => setCategories(res.data));
+    api.get("/categories").then((res) => setCategories(res.data)).catch((err) => {
+      setError(err.response?.data?.error || err.message || "Could not load categories.");
+    });
   }, []);
 
   function openNew() {
     setForm(EMPTY_FORM);
+    setImageFile(null);
+    setImagePreview("");
+    setError("");
     setShowForm(true);
   }
 
   function openEdit(p) {
     setForm({ ...p, featured: !!p.featured });
+    setImageFile(null);
+    setImagePreview(p.image_url || "");
+    setError("");
     setShowForm(true);
+  }
+
+  function handleImageChange(event) {
+    const file = event.target.files?.[0] || null;
+    if (!file) {
+      setImageFile(null);
+      return;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call({
+      "image/jpeg": true,
+      "image/png": true,
+      "image/webp": true,
+    }, file.type)) {
+      setError("Use a JPG, PNG, or WebP image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Product images must be 5 MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    setError("");
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   }
 
   async function handleDelete(id) {
     if (!window.confirm("Delete this product?")) return;
-    await api.delete(`/products/${id}`);
-    loadProducts();
+    try {
+      await api.delete(`/products/${id}`);
+      await loadProducts();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Could not delete product.");
+    }
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const payload = { ...form, price: Number(form.price), category_id: Number(form.category_id) };
+    setSaving(true);
+    setError("");
 
-    if (form.id) {
-      await api.put(`/products/${form.id}`, payload);
-    } else {
-      await api.post("/products", payload);
+    try {
+      const payload = { ...form, price: Number(form.price), category_id: Number(form.category_id) };
+      let saved;
+
+      if (form.id) {
+        if (imageFile) payload.image_url = await uploadProductImage(imageFile, form.id);
+        saved = await api.put(`/products/${form.id}`, payload);
+      } else {
+        saved = await api.post("/products", payload);
+        if (imageFile && saved.data?.id) {
+          const imageUrl = await uploadProductImage(imageFile, saved.data.id);
+          await api.put(`/products/${saved.data.id}`, { ...saved.data, image_url: imageUrl });
+        }
+      }
+
+      setShowForm(false);
+      setImageFile(null);
+      setImagePreview("");
+      await loadProducts();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Could not save product.");
+    } finally {
+      setSaving(false);
     }
-    setShowForm(false);
-    loadProducts();
   }
 
   return (
@@ -67,6 +145,8 @@ export default function AdminProducts() {
           + Add Product
         </button>
       </div>
+
+      {error && <div className="error-text" role="alert" style={{ marginBottom: 20 }}>{error}</div>}
 
       {showForm && (
         <form
@@ -146,6 +226,22 @@ export default function AdminProducts() {
                 onChange={(e) => setForm({ ...form, image_url: e.target.value })}
                 placeholder="https://..."
               />
+              {isSupabaseConfigured && (
+                <>
+                  <label htmlFor="product-image-file" style={{ marginTop: 14 }}>Or upload an image</label>
+                  <input
+                    id="product-image-file"
+                    className="form-control"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleImageChange}
+                  />
+                  <small className="image-upload-help">JPG, PNG, or WebP up to 5 MB.</small>
+                  {imagePreview && (
+                    <img className="admin-image-preview" src={imagePreview} alt="Product preview" />
+                  )}
+                </>
+              )}
             </div>
             <div className="form-group">
               <label>Stock</label>
@@ -180,8 +276,8 @@ export default function AdminProducts() {
             </div>
           </div>
 
-          <button className="btn" type="submit">
-            {form.id ? "Update Product" : "Create Product"}
+          <button className="btn" type="submit" disabled={saving}>
+            {saving ? "Saving..." : form.id ? "Update Product" : "Create Product"}
           </button>
           <button
             type="button"
@@ -194,7 +290,8 @@ export default function AdminProducts() {
         </form>
       )}
 
-      <table className="admin-table">
+      <div className="admin-table-wrap">
+        <table className="admin-table">
         <thead>
           <tr>
             <th></th>
@@ -207,10 +304,16 @@ export default function AdminProducts() {
           </tr>
         </thead>
         <tbody>
-          {products.map((p) => (
+          {loading && (
+            <tr><td colSpan="7" className="empty-state">Loading products...</td></tr>
+          )}
+          {!loading && products.length === 0 && (
+            <tr><td colSpan="7" className="empty-state">No products yet. Add the first catalogue item above.</td></tr>
+          )}
+          {!loading && products.map((p) => (
             <tr key={p.id}>
               <td>
-                <img src={p.image_url} alt={p.name} />
+                {p.image_url ? <img src={p.image_url} alt={p.name} /> : <span aria-label="No image">—</span>}
               </td>
               <td>{p.name}</td>
               <td>{p.category_name}</td>
@@ -228,7 +331,8 @@ export default function AdminProducts() {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }

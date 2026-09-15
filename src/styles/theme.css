@@ -626,6 +626,10 @@ button {
   font-size: 14px;
 }
 
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
 .admin-table th,
 .admin-table td {
   text-align: left;
@@ -643,6 +647,22 @@ button {
 .admin-table img {
   width: 44px;
   height: 55px;
+  object-fit: cover;
+}
+
+.image-upload-help {
+  display: block;
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.admin-image-preview {
+  display: block;
+  width: 96px;
+  height: 120px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
   object-fit: cover;
 }
 

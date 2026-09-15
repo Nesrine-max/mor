@@ -79,6 +79,46 @@ function productPayload(product) {
   };
 }
 
+const PRODUCT_IMAGE_TYPES = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+function storageId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export async function uploadProductImage(file, productId = "draft") {
+  if (!isSupabaseConfigured) {
+    throw apiError("Product image uploads require Supabase configuration", 503);
+  }
+
+  if (!file || !PRODUCT_IMAGE_TYPES[file.type]) {
+    throw apiError("Use a JPG, PNG, or WebP image", 400);
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    throw apiError("Product images must be 5 MB or smaller", 400);
+  }
+
+  const folder = String(productId).replace(/[^a-zA-Z0-9_-]/g, "") || "draft";
+  const path = `${folder}/${storageId()}.${PRODUCT_IMAGE_TYPES[file.type]}`;
+  const { error } = await supabase.storage.from("product-images").upload(path, file, {
+    cacheControl: "3600",
+    contentType: file.type,
+    upsert: false,
+  });
+  throwIfError(error, "Could not upload product image");
+
+  const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+  return data.publicUrl;
+}
+
 async function getCategories() {
   const { data, error } = await supabase.from("categories").select("*").order("sort_order").order("name");
   throwIfError(error, "Could not load categories");
