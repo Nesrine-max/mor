@@ -1,6 +1,6 @@
 # MOR AI handoff and progress log
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 ## Purpose
 
@@ -59,6 +59,9 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Added a conditional Supabase data layer in `src/api.js`, `src/supabase.js`, and `AdminAuthContext`; the legacy Axios API remains available when Supabase variables are blank.
 - Added `@supabase/supabase-js` and documented the public Supabase environment variables.
 - Added `supabase/README.md` describing how to apply and deploy the Supabase foundation.
+- Initialized the Supabase CLI configuration with `npx --yes supabase init`, creating `supabase/config.toml` and `supabase/.gitignore`.
+- Verified Supabase CLI `2.117.0` is available through `npx`; the standalone executable is not currently on this PowerShell session's PATH.
+- Committed and pushed the CLI configuration as `11fb4c76` (`Initialize Supabase CLI configuration`).
 - Committed the implementation as `3fdf8fc2` and pushed it to `origin/main`.
 - Updated `README.md` to describe the new order flow and current integration boundary.
 - No external Supabase project has been created or connected yet, so the Supabase path is not exercised against a live database.
@@ -80,6 +83,7 @@ The project is a Create React App frontend with local Supabase migration/functio
 - Axios default API base: `http://localhost:5000/api`
 - Axios override: `REACT_APP_API_URL`
 - Supabase override: `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_PUBLISHABLE_KEY`
+- Supabase CLI in this environment: `npx --yes supabase` (version `2.117.0`)
 - Frontend proxy declaration: `http://localhost:5000`
 
 Existing routes:
@@ -151,16 +155,17 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 3. Done: `.gitignore` and `.env.example` are present.
 4. Done: the tracked `.env` was removed from Git without printing its contents; review/rotate any historical credential if one existed.
 5. Done: `node_modules` was removed from version control without deleting the local folder.
-6. Create the Supabase project and link it to the repository.
-7. Apply and validate the existing migration rather than creating a second duplicate schema.
-8. Enable RLS and create the admin role policies before using the connected admin UI.
-9. Done locally: Supabase Auth/profile authorization replaces the custom flow when Supabase variables are configured.
-10. Done locally: the trusted order-creation function is connected through the conditional data layer.
-11. Done locally: the trusted status-update function and history path are connected through the conditional data layer.
-12. Done locally: stock reservation/release behavior exists in the status transition function; validate it against the live project.
-13. Replace placeholder images and complete product/image management.
-14. Add tests, deployment configuration, analytics, and manual backup/export procedures.
-15. Deploy to Cloudflare Pages and run the production launch checklist.
+6. Authenticate the CLI locally with `npx --yes supabase login`; do not paste or commit the access token into the repository or chat.
+7. Run `npx --yes supabase projects list`, choose the intended project, and link it with `npx --yes supabase link --project-ref <project-ref>`.
+8. Apply and validate the existing migration rather than creating a second duplicate schema.
+9. Enable RLS and create the admin role policies before using the connected admin UI.
+10. Done locally: Supabase Auth/profile authorization replaces the custom flow when Supabase variables are configured.
+11. Done locally: the trusted order-creation function is connected through the conditional data layer.
+12. Done locally: the trusted status-update function and history path are connected through the conditional data layer.
+13. Done locally: stock reservation/release behavior exists in the status transition function; validate it against the live project.
+14. Replace placeholder images and complete product/image management.
+15. Add tests, deployment configuration, analytics, and manual backup/export procedures.
+16. Deploy to Cloudflare Pages and run the production launch checklist.
 
 ## Non-negotiable constraints for future work
 
@@ -214,6 +219,15 @@ The latest build completed successfully after the conditional Supabase data-laye
 - Blocker: no Supabase project/CLI is available in this environment, so migration/function deployment and live RLS validation remain pending.
 
 After implementation begins, record every relevant command and result here. A failed check must remain documented until fixed.
+
+### 2026-09-15 - Supabase CLI initialization
+
+- Confirmed `npx --yes supabase --version` returns `2.117.0`.
+- Ran `npx --yes supabase init` successfully in the existing repository.
+- Added and pushed `supabase/config.toml` and `supabase/.gitignore` in commit `11fb4c76`.
+- Ran `npx --yes supabase projects list`; it is currently blocked by `LegacyPlatformAuthRequiredError` because this shell has no Supabase access token.
+- The standalone `supabase` command is not discoverable in the current PowerShell PATH, but the CLI is usable through `npx`.
+- Next exact task: authenticate with `npx --yes supabase login` in a local terminal, then list/link the intended project before applying the migration or deploying functions.
 
 ## How to update this handoff
 
