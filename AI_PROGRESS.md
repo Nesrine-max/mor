@@ -242,6 +242,8 @@ After implementation begins, record every relevant command and result here. A fa
 - Confirmed the hosted catalogue REST query returns HTTP 200 with an empty result, the guest order function rejects an empty item list with HTTP 400, and the admin status function rejects a non-admin with HTTP 403.
 - Added linked public Supabase variables to the ignored local `.env` and verified `npm run build` still compiles successfully.
 - Browser-tested `/`, `/shop/women`, `/order`, and `/admin/login` through the local app. The empty catalogue now renders a useful message instead of loading forever; no application console errors remain.
+- Read-only hosted counts are currently `users=0`, `admins=0`, `categories=0`, `products=0`, and `orders=0`.
+- The first dry-run after deployment hit a transient pooler authentication timeout; a retry passed and reports the remote database is up to date.
 - A legacy service-role key appeared in the CLI's raw API-key listing output during setup; it was not copied into files or commands. Consider rotating legacy API keys in Supabase project settings if the output is treated as exposed.
 - Next exact task: create/promote the first admin, add catalogue records, configure the production frontend environment, and complete a real order/status flow.
 
