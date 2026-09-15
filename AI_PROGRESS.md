@@ -62,9 +62,14 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Initialized the Supabase CLI configuration with `npx --yes supabase init`, creating `supabase/config.toml` and `supabase/.gitignore`.
 - Verified Supabase CLI `2.117.0` is available through `npx`; the standalone executable is not currently on this PowerShell session's PATH.
 - Committed and pushed the CLI configuration as `11fb4c76` (`Initialize Supabase CLI configuration`).
+- Authenticated the CLI, linked project `MOR` (`fsstqthwpzeypxdasdjo`), and applied migration `0001_initial_schema.sql` to the hosted database.
+- Deployed `create-order` with gateway JWT verification disabled for guest website requests, while keeping `update-order-status` JWT-protected.
+- Added the linked Supabase URL and publishable key to the ignored local `.env` for local frontend testing; no service-role key was added to the repository or frontend.
+- Verified the hosted catalogue endpoint returns HTTP 200, guest order validation returns the expected HTTP 400, and unauthenticated status updates return HTTP 403.
+- Fixed the home page's empty-catalogue state and added `public/favicon.svg`; browser-tested the home, shop, order-empty, and admin-login routes with no application console errors.
 - Committed the implementation as `3fdf8fc2` and pushed it to `origin/main`.
 - Updated `README.md` to describe the new order flow and current integration boundary.
-- No external Supabase project has been created or connected yet, so the Supabase path is not exercised against a live database.
+- The hosted Supabase path is now exercised against the live `MOR` project; the catalogue is currently empty and no admin account has been promoted yet.
 - No online payment or courier integration was added.
 
 ## Current repository facts
@@ -84,6 +89,7 @@ The project is a Create React App frontend with local Supabase migration/functio
 - Axios override: `REACT_APP_API_URL`
 - Supabase override: `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_PUBLISHABLE_KEY`
 - Supabase CLI in this environment: `npx --yes supabase` (version `2.117.0`)
+- Linked Supabase project: `MOR` / `fsstqthwpzeypxdasdjo` (`eu-west-1`)
 - Frontend proxy declaration: `http://localhost:5000`
 
 Existing routes:
@@ -108,17 +114,17 @@ Existing browser storage keys:
 
 ## Important findings and known problems
 
-1. There is no deployed backend or connected Supabase project yet; the local schema and Edge Functions are now in the repository.
-2. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
-3. The Supabase migration and functions have not been applied/deployed or tested against a live project.
+1. The hosted Supabase project is linked and deployed, but the catalogue is empty until products and categories are entered.
+2. A first Supabase Auth user still needs to be created and promoted from `staff` to `admin` before the admin panel can be used.
+3. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
 4. The home page uses Picsum placeholder category images.
-5. Product images depend on URLs returned by the missing backend.
-6. Order totals are recalculated by the local `create_order` database function; the browser only sends item IDs, sizes, and quantities.
-7. Stock reservation/release is implemented in the local `update_order_status` function but is not yet validated against a live database.
+5. Product images depend on URLs returned by the catalogue; storage bucket policies and image management still need completion.
+6. Order totals are recalculated by the hosted `create_order` database function; the browser only sends item IDs, sizes, and quantities.
+7. Stock reservation/release is deployed and passed schema/endpoint checks, but needs a real product/order/admin end-to-end test.
 8. Supabase admin status updates use the protected `update-order-status` function; legacy API mode still depends on `/orders/:id`.
 9. Supabase mode uses managed Auth and profile authorization; custom token/email storage remains only for legacy API mode.
 10. Admin product/category screens do not have comprehensive error states.
-11. Home, product detail, dashboard, and several other fetches have minimal or no visible error handling.
+11. The dashboard and several non-catalogue fetches still need broader failure-state coverage.
 12. Footer Help and Company links point to `#!` placeholders.
 13. The primary mobile navigation toggle is implemented; mega-menu behavior on touch devices still needs browser QA.
 14. Size selectors are now buttons; unavailable-size disabling and stock-aware selection still need implementation.
@@ -155,17 +161,16 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 3. Done: `.gitignore` and `.env.example` are present.
 4. Done: the tracked `.env` was removed from Git without printing its contents; review/rotate any historical credential if one existed.
 5. Done: `node_modules` was removed from version control without deleting the local folder.
-6. Authenticate the CLI locally with `npx --yes supabase login`; do not paste or commit the access token into the repository or chat.
-7. Run `npx --yes supabase projects list`, choose the intended project, and link it with `npx --yes supabase link --project-ref <project-ref>`.
-8. Apply and validate the existing migration rather than creating a second duplicate schema.
-9. Enable RLS and create the admin role policies before using the connected admin UI.
-10. Done locally: Supabase Auth/profile authorization replaces the custom flow when Supabase variables are configured.
-11. Done locally: the trusted order-creation function is connected through the conditional data layer.
-12. Done locally: the trusted status-update function and history path are connected through the conditional data layer.
-13. Done locally: stock reservation/release behavior exists in the status transition function; validate it against the live project.
-14. Replace placeholder images and complete product/image management.
-15. Add tests, deployment configuration, analytics, and manual backup/export procedures.
-16. Deploy to Cloudflare Pages and run the production launch checklist.
+6. Done: authenticate the CLI, link project `fsstqthwpzeypxdasdjo`, and apply migration `0001_initial_schema.sql`.
+7. Done: deploy `create-order` and `update-order-status`; keep the former guest-accessible and the latter JWT-protected.
+8. Done: validate public catalogue reads, guest-order validation, and the protected admin endpoint against the hosted project.
+9. Create the first administrator in Supabase Auth, then update that user's profile role to `admin` through the SQL editor.
+10. Add categories/products and configure real images, currency, contact details, and delivery rules.
+11. Add the storage bucket and admin image policies before relying on product uploads.
+12. Complete a real website order and admin-created order test, including status transitions, stock reservation/release, and cash/delivery tracking.
+13. Replace placeholder images and complete product/image management.
+14. Add tests, deployment configuration, analytics, and manual backup/export procedures.
+15. Deploy to Cloudflare Pages and run the production launch checklist.
 
 ## Non-negotiable constraints for future work
 
@@ -225,9 +230,20 @@ After implementation begins, record every relevant command and result here. A fa
 - Confirmed `npx --yes supabase --version` returns `2.117.0`.
 - Ran `npx --yes supabase init` successfully in the existing repository.
 - Added and pushed `supabase/config.toml` and `supabase/.gitignore` in commit `11fb4c76`.
-- Ran `npx --yes supabase projects list`; it is currently blocked by `LegacyPlatformAuthRequiredError` because this shell has no Supabase access token.
+- The initial `npx --yes supabase projects list` check returned `LegacyPlatformAuthRequiredError` before the user authenticated the CLI; authentication was completed later in the same session.
 - The standalone `supabase` command is not discoverable in the current PowerShell PATH, but the CLI is usable through `npx`.
-- Next exact task: authenticate with `npx --yes supabase login` in a local terminal, then list/link the intended project before applying the migration or deploying functions.
+- The follow-up hosted connection, migration push, and function deployment are recorded in the next entry.
+
+### 2026-09-15 - Hosted Supabase connection and browser verification
+
+- Confirmed the CLI session is authenticated and linked to `MOR` (`fsstqthwpzeypxdasdjo`).
+- `npx --yes supabase db push` applied `0001_initial_schema.sql`; `npx --yes supabase migration list` reports local and remote `0001` in sync.
+- Deployed `create-order` and `update-order-status`; redeployed `create-order --no-verify-jwt` so guest storefront requests reach its internal source validation.
+- Confirmed the hosted catalogue REST query returns HTTP 200 with an empty result, the guest order function rejects an empty item list with HTTP 400, and the admin status function rejects a non-admin with HTTP 403.
+- Added linked public Supabase variables to the ignored local `.env` and verified `npm run build` still compiles successfully.
+- Browser-tested `/`, `/shop/women`, `/order`, and `/admin/login` through the local app. The empty catalogue now renders a useful message instead of loading forever; no application console errors remain.
+- A legacy service-role key appeared in the CLI's raw API-key listing output during setup; it was not copied into files or commands. Consider rotating legacy API keys in Supabase project settings if the output is treated as exposed.
+- Next exact task: create/promote the first admin, add catalogue records, configure the production frontend environment, and complete a real order/status flow.
 
 ## How to update this handoff
 

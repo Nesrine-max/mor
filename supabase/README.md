@@ -11,6 +11,8 @@ This directory contains the first database and server-function foundation for MO
 
 No payment provider is used. The functions record cash order requests, delivery progress, status history, and stock transitions only.
 
+The repository is currently linked to the hosted `MOR` project (`fsstqthwpzeypxdasdjo`). Migration `0001_initial_schema.sql` is applied, and both Edge Functions are deployed. The catalogue is still empty until real products and categories are added.
+
 ## Setup when a Supabase project is available
 
 1. Install the Supabase CLI and run `supabase init` from the repository root if a local Supabase configuration does not exist yet.
@@ -29,9 +31,12 @@ No payment provider is used. The functions record cash order requests, delivery 
 8. Deploy both functions:
 
    ```bash
-   supabase functions deploy create-order
+   supabase functions deploy create-order --no-verify-jwt
    supabase functions deploy update-order-status
    ```
+
+   `create-order` must allow guest requests from the storefront; its function
+   code still restricts offline-source orders to authenticated admins.
 
 9. Add the public project URL and publishable/anon key to the frontend environment:
 
@@ -46,7 +51,7 @@ The service-role key must only exist in the Edge Function environment. It must n
 
 ## Not finished yet
 
-- No external Supabase project has been created or connected from this repository yet.
-- The migration and functions have not been executed or deployed against a Supabase project in this environment.
+- The first Supabase Auth user still needs to be promoted from the default `staff` profile role to `admin`.
+- The migration and functions are deployed, but the full website-to-admin order flow still needs live testing with real catalogue records.
 - Product image storage bucket SQL policies still need to be added after the bucket name is finalized.
 - Real product data, images, currency, contact details, and delivery rules still need to be configured.
