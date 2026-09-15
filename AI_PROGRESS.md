@@ -64,6 +64,8 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Committed and pushed the CLI configuration as `11fb4c76` (`Initialize Supabase CLI configuration`).
 - Authenticated the CLI, linked project `MOR` (`fsstqthwpzeypxdasdjo`), and applied migration `0001_initial_schema.sql` to the hosted database.
 - Deployed `create-order` with gateway JWT verification disabled for guest website requests, while keeping `update-order-status` JWT-protected.
+- Added `0002_product_image_storage.sql`, creating the hosted `product-images` bucket with public reads, 5 MB JPG/PNG/WebP limits, and admin-only writes.
+- Added Supabase product-image uploads, previews, validation, and admin product loading/error/empty states.
 - Added the linked Supabase URL and publishable key to the ignored local `.env` for local frontend testing; no service-role key was added to the repository or frontend.
 - Verified the hosted catalogue endpoint returns HTTP 200, guest order validation returns the expected HTTP 400, and unauthenticated status updates return HTTP 403.
 - Fixed the home page's empty-catalogue state and added `public/favicon.svg`; browser-tested the home, shop, order-empty, and admin-login routes with no application console errors.
@@ -118,7 +120,7 @@ Existing browser storage keys:
 2. A first Supabase Auth user still needs to be created and promoted from `staff` to `admin` before the admin panel can be used.
 3. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
 4. The home page uses Picsum placeholder category images.
-5. Product images depend on URLs returned by the catalogue; storage bucket policies and image management still need completion.
+5. Product image storage and admin upload support are deployed; the first real upload still needs testing after an admin account is promoted.
 6. Order totals are recalculated by the hosted `create_order` database function; the browser only sends item IDs, sizes, and quantities.
 7. Stock reservation/release is deployed and passed schema/endpoint checks, but needs a real product/order/admin end-to-end test.
 8. Supabase admin status updates use the protected `update-order-status` function; legacy API mode still depends on `/orders/:id`.
@@ -166,7 +168,7 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 8. Done: validate public catalogue reads, guest-order validation, and the protected admin endpoint against the hosted project.
 9. Create the first administrator in Supabase Auth, then update that user's profile role to `admin` through the SQL editor.
 10. Add categories/products and configure real images, currency, contact details, and delivery rules.
-11. Add the storage bucket and admin image policies before relying on product uploads.
+11. Done: add the `product-images` storage bucket and admin image policies; test a real upload after admin setup.
 12. Complete a real website order and admin-created order test, including status transitions, stock reservation/release, and cash/delivery tracking.
 13. Replace placeholder images and complete product/image management.
 14. Add tests, deployment configuration, analytics, and manual backup/export procedures.
@@ -195,7 +197,7 @@ npm test -- --watchAll=false --passWithNoTests
 No tests found, exiting with code 0
 ```
 
-The latest build completed successfully after the conditional Supabase data-layer/Auth adapter and status-update function changes. The SQL migration has not yet been executed against a local or hosted Postgres/Supabase instance.
+The latest build completed successfully after the conditional Supabase data-layer/Auth adapter and product image upload changes. Migrations `0001` and `0002` are applied to the hosted project; they have not been run against a local Docker Postgres instance.
 
 ### 2026-09-14 - First implementation slice verified
 
@@ -246,6 +248,16 @@ After implementation begins, record every relevant command and result here. A fa
 - The first dry-run after deployment hit a transient pooler authentication timeout; a retry passed and reports the remote database is up to date.
 - A legacy service-role key appeared in the CLI's raw API-key listing output during setup; it was not copied into files or commands. Consider rotating legacy API keys in Supabase project settings if the output is treated as exposed.
 - Next exact task: create/promote the first admin, add catalogue records, configure the production frontend environment, and complete a real order/status flow.
+
+### 2026-09-15 - Product image storage workflow
+
+- Added `supabase/migrations/0002_product_image_storage.sql` and applied it to the linked project.
+- Verified the hosted `product-images` bucket is public-read, limited to 5 MB, and restricted to JPG/PNG/WebP; verified all four storage policies exist.
+- Added `uploadProductImage` to the Supabase data layer and connected the admin product form to upload previews and storage-backed image URLs.
+- Added admin product loading, save/delete error states, saving state, empty state, and responsive table overflow handling.
+- Verified `npm test -- --watchAll=false --passWithNoTests`, `npm run build`, and `git diff --check` after the implementation.
+- Committed and pushed as `33a48413` (`Add product image storage workflow`).
+- Next exact task: promote the first Auth user to admin, add real categories/products, test one image upload, then complete the end-to-end order flow.
 
 ## How to update this handoff
 

@@ -1,6 +1,6 @@
 # MOR
 
-MOR is a dark, editorial-style clothing storefront for men and women. This repository contains the React storefront/admin UI plus a local Supabase migration and order-function foundation. The app supports Supabase when its public environment variables are configured and keeps the legacy HTTP API as a fallback; no external project is connected yet.
+MOR is a dark, editorial-style clothing storefront for men and women. This repository contains the React storefront/admin UI plus the hosted Supabase database, storage, and order-function foundation. The app uses Supabase when its public environment variables are configured and keeps the legacy HTTP API as a fallback.
 
 ## What is included
 
@@ -26,7 +26,7 @@ The order flow records requests for real-life cash fulfilment. It does not proce
 ## Requirements
 
 - Node.js and npm.
-- A running MOR backend API for the current Axios mode, or a configured Supabase project after the migration/data-layer work is completed.
+- A running MOR backend API for legacy Axios mode, or the configured Supabase project used by the deployed application.
 
 ## Getting started
 
@@ -80,7 +80,7 @@ REACT_APP_SUPABASE_PUBLISHABLE_KEY=
 | `/order` | Storefront | Submit a cash order request with delivery or pickup details. |
 | `/admin/login` | Admin | Submit email/password credentials to the backend. |
 | `/admin/dashboard` | Admin | Product, category, stock, featured-item, and recent-product summary. |
-| `/admin/products` | Admin | Create, edit, and delete products. |
+| `/admin/products` | Admin | Create, edit, delete, and upload images for products. |
 | `/admin/categories` | Admin | Create, edit, and delete categories. |
 | `/admin/orders` | Admin | Filter orders and update order, delivery, and cash statuses. |
 | `/admin/orders/new` | Admin | Create an order received through an offline channel. |
@@ -137,7 +137,7 @@ Quantities at or below zero remove a line. The cart total is an estimate for rev
 
 ### Admin authentication
 
-`AdminAuthProvider` restores `mor_admin_token` and `mor_admin_email` from `localStorage`. Successful login stores both values; logout removes them. This is client-side session state and does not replace server-side authorization.
+In Supabase mode, `AdminAuthProvider` restores the managed Supabase Auth session and checks the user's `profiles.role` before allowing access. Legacy Axios mode restores `mor_admin_token` and `mor_admin_email` from `localStorage`; that fallback still depends on server-side authorization.
 
 ## Project structure
 
@@ -176,9 +176,10 @@ The implementation also adds `src/config.js`, `src/pages/OrderRequest.js`, `src/
 
 ## Current limitations and integration notes
 
-- No external Supabase project has been created or connected yet. The React data layer now supports Supabase when configured and preserves the legacy Axios fallback.
+- The hosted `MOR` Supabase project is connected. Migrations `0001_initial_schema.sql` and `0002_product_image_storage.sql` are applied, and both order functions are deployed.
+- The catalogue is empty until the first admin adds categories and products. Supabase-mode product management supports public image URLs and validated uploads to the `product-images` bucket.
 - The customer and admin order screens require the deployed `create-order` and `update-order-status` functions when Supabase mode is enabled.
-- The local migration now includes transactional stock reservation/release and status-history writes, but it has not been executed against a project here.
+- The hosted migration includes transactional stock reservation/release and status-history writes; a full real-data order test still remains.
 - Footer links for shipping, returns, size guide, about, and contact currently point to `#!` placeholders.
 - Several data loads intentionally have minimal error handling; the backend should return predictable errors and status codes.
 - There is no automated test suite in the repository yet.

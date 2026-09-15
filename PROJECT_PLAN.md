@@ -458,14 +458,14 @@ Complete this before connecting deployment:
 
 ### Phase 1: Supabase foundation
 
-- [ ] Create the Supabase project.
+- [x] Create the Supabase project.
 - [x] Initialize the Supabase folder and migrations locally.
 - [x] Create tables, indexes, constraints, and status checks locally.
 - [ ] Seed categories and sample products.
 - [ ] Configure the admin Auth user.
-- [ ] Create the admin role/profile policy.
-- [ ] Enable and test RLS.
-- [ ] Create the product image bucket and policies.
+- [x] Create the admin role/profile policy.
+- [x] Enable and test RLS.
+- [x] Create the product image bucket and policies.
 - [x] Create the trusted order and status-update functions locally.
 - [x] Add local development environment documentation.
 
@@ -489,8 +489,8 @@ Complete this before connecting deployment:
 - [ ] Implement search, sorting, filters, and empty states.
 - [ ] Upgrade product cards and product detail pages.
 - [ ] Add mobile navigation.
-- [ ] Add image gallery and upload-backed product images.
-- [ ] Implement the order-request form.
+- [x] Add image gallery and upload-backed product images.
+- [x] Implement the order-request form.
 - [ ] Implement order confirmation with order number.
 - [ ] Add contact/location/content pages.
 
@@ -505,7 +505,7 @@ Complete this before connecting deployment:
 - [ ] Add status-transition controls.
 - [ ] Add cash collection controls.
 - [ ] Add delivery assignment/notes fields.
-- [ ] Add product image and stock management.
+- [x] Add product image and stock management.
 - [ ] Add dashboard insight cards and operational queues.
 - [ ] Add client-side CSV export.
 

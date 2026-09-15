@@ -20,7 +20,7 @@ The repository is currently linked to the hosted `MOR` project (`fsstqthwpzeypxd
 3. Apply the migration with `supabase db push`.
 4. Create the first administrator in Supabase Auth.
 5. Set that user's `profiles.role` to `admin` using the protected SQL editor.
-6. Create a storage bucket for product images and add storage policies for the admin role.
+6. The `0002_product_image_storage.sql` migration creates the public `product-images` bucket, limits uploads to 5 MB JPG/PNG/WebP files, and adds admin-only write policies.
 7. Set the Edge Function secrets in the Supabase dashboard:
 
    ```text
@@ -53,5 +53,5 @@ The service-role key must only exist in the Edge Function environment. It must n
 
 - The first Supabase Auth user still needs to be promoted from the default `staff` profile role to `admin`.
 - The migration and functions are deployed, but the full website-to-admin order flow still needs live testing with real catalogue records.
-- Product image storage bucket SQL policies still need to be added after the bucket name is finalized.
+- A real admin upload still needs to be tested after the first admin account is promoted.
 - Real product data, images, currency, contact details, and delivery rules still need to be configured.
