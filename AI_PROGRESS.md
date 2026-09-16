@@ -127,14 +127,13 @@ Existing browser storage keys:
 7. Stock reservation/release is deployed and passed schema/endpoint checks, but needs a real product/order/admin end-to-end test.
 8. Supabase admin status updates use the protected `update-order-status` function; legacy API mode still depends on `/orders/:id`.
 9. Supabase mode uses managed Auth and profile authorization; custom token/email storage remains only for legacy API mode.
-10. Admin product/category screens do not have comprehensive error states.
-11. The dashboard and several non-catalogue fetches still need broader failure-state coverage.
-12. Footer Help and Company links point to `#!` placeholders.
-13. The primary mobile navigation toggle is implemented; mega-menu behavior on touch devices still needs browser QA.
-14. Size selectors are now buttons; unavailable-size disabling and stock-aware selection still need implementation.
-15. `.env` and `node_modules` are removed from the Git index and ignored locally; the cleanup is included in the pushed implementation commit.
-16. There are no automated test files.
-17. Supabase advisors now report only the managed `public.rls_auto_enable()` warning; MOR-owned helper/function warnings were removed.
+10. Product, category, dashboard, and catalogue screens now have loading, empty, save, and fetch failure states where their current flows need them; broader automated coverage is still missing.
+11. Footer Help and Company links point to `#!` placeholders.
+12. The primary mobile navigation toggle is implemented; mega-menu behavior on touch devices still needs browser QA.
+13. Size selectors are buttons with unavailable-size disabling and stock-aware cart quantity clamping.
+14. `.env`, `node_modules`, and `.vercel` are ignored locally; `.env` and `node_modules` were removed from the Git index in earlier commits.
+15. There are no automated test files.
+16. Supabase advisors now report only the managed `public.rls_auto_enable()` warning; MOR-owned helper/function warnings were removed.
 
 ## Agreed target order model
 
@@ -174,8 +173,8 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 11. Done: add the `product-images` storage bucket and admin image policies; test a real upload after admin setup.
 12. Complete a real website order and admin-created order test, including status transitions, stock reservation/release, and cash/delivery tracking.
 13. Replace placeholder images and complete product/image management.
-14. Add tests, deployment configuration, analytics, and manual backup/export procedures.
-15. Deploy to Cloudflare Pages and run the production launch checklist.
+14. Done: add deployment configuration. Still needed: automated tests, analytics, and manual backup/export procedures.
+15. Done for the current Vercel deployment; if hosting is migrated to Cloudflare Pages later, repeat the production launch checklist there.
 
 ## Non-negotiable constraints for future work
 
@@ -200,7 +199,7 @@ npm test -- --watchAll=false --passWithNoTests
 No tests found, exiting with code 0
 ```
 
-The latest build completed successfully after the conditional Supabase data-layer/Auth adapter and product image upload changes. Migrations `0001` and `0002` are applied to the hosted project; they have not been run against a local Docker Postgres instance.
+The latest build completed successfully after the conditional Supabase data-layer/Auth adapter, product image upload, Vercel deployment configuration, and admin-login accessibility changes. Migrations `0001` through `0005` are applied to the hosted project; they have not been run against a local Docker Postgres instance.
 
 ### 2026-09-14 - First implementation slice verified
 
@@ -283,6 +282,17 @@ After implementation begins, record every relevant command and result here. A fa
 - GitHub auto-linking was unavailable because the authenticated Vercel account does not have the repository permissions required for automatic integration. Direct CLI deployment works, and no GitHub Actions workflow was added.
 - The Vercel project is configured for `npm run build` with `build` as the output directory. Production smoke checks and direct-route checks are recorded after the final header deployment.
 - Remaining blocker: the hosted database still has zero users/products/categories/orders. The first admin, real catalogue data, currency/contact/delivery confirmation, service-key rotation, real image upload, and complete website/admin order test require user-side business/account input.
+
+### 2026-09-16 - Production verification and admin-login polish
+
+- Added autocomplete metadata, explicit labels, a submitting state, and Supabase-friendly error text to `src/pages/admin/Login.js`.
+- `npm test -- --watchAll=false --passWithNoTests`: passed; no test files exist.
+- `npm run build`: passed; production bundle compiled successfully.
+- `git diff --check`: passed.
+- Live HTTP checks against `https://mor-ashen.vercel.app`: `/`, `/shop/women`, `/product/1`, `/order`, `/admin/login`, and `/robots.txt` all returned HTTP 200. SPA deep routes include the Vercel security headers; hashed JavaScript returned immutable one-year caching.
+- Live function check with the production origin: `create-order` returned the expected HTTP 400 for an empty item list and `Access-Control-Allow-Origin: https://mor-ashen.vercel.app`.
+- Real-browser checks: home and women collection rendered the empty-catalogue state, direct `/admin/dashboard` redirected to `/admin/login`, Supabase catalogue requests returned HTTP 200, and the final admin-login page reported zero console errors and zero warnings.
+- Committed and pushed the deployment/docs slice as `cfe56249` and the login polish as `8d6856bd`; the current `main` branch is deployed to the stable Vercel alias.
 
 ## How to update this handoff
 

@@ -69,7 +69,7 @@ The repository is prepared for a static Vercel or Cloudflare Pages deployment wi
 - Build command: `npm run build`.
 - Output directory: `build`.
 - Production branch: `main`.
-- Add `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_PUBLISHABLE_KEY`, `REACT_APP_CURRENCY`, and `REACT_APP_LOCALE` as Pages environment variables.
+- Add `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_PUBLISHABLE_KEY`, `REACT_APP_CURRENCY`, and `REACT_APP_LOCALE` as hosting environment variables.
 - Never add `SUPABASE_SERVICE_ROLE_KEY` or any secret key to Pages; the Edge Functions keep server-only secrets.
 - `public/_redirects` handles SPA routes on Pages-style hosts, `public/_headers` adds static-hosting headers there, and `vercel.json` adds the equivalent Vercel headers.
 
