@@ -18,9 +18,15 @@ export function CartProvider({ children }) {
   function addToCart(product, size, qty = 1) {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === product.id && i.size === size);
+      const availableStock = Number(product.stock ?? product.stock_quantity);
+      const requestedQty = existing ? existing.qty + Number(qty) : Number(qty);
+      const nextQty = Number.isFinite(availableStock) && availableStock > 0
+        ? Math.min(requestedQty, availableStock)
+        : requestedQty;
+
       if (existing) {
         return prev.map((i) =>
-          i.id === product.id && i.size === size ? { ...i, qty: i.qty + qty } : i
+          i.id === product.id && i.size === size ? { ...i, qty: nextQty } : i
         );
       }
       return [
@@ -31,7 +37,8 @@ export function CartProvider({ children }) {
           price: Number(product.price),
           image_url: product.image_url,
           size,
-          qty: Number(qty),
+          stock: Number.isFinite(availableStock) ? availableStock : null,
+          qty: nextQty,
         },
       ];
     });
@@ -41,7 +48,12 @@ export function CartProvider({ children }) {
     setItems((prev) =>
       qty <= 0
         ? prev.filter((i) => !(i.id === id && i.size === size))
-        : prev.map((i) => (i.id === id && i.size === size ? { ...i, qty } : i))
+        : prev.map((i) => {
+            if (i.id !== id || i.size !== size) return i;
+            const maxQty = Number(i.stock);
+            const nextQty = Number.isFinite(maxQty) && maxQty > 0 ? Math.min(qty, maxQty) : qty;
+            return { ...i, qty: nextQty };
+          })
     );
   }
 

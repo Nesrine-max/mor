@@ -8,6 +8,7 @@ export default function Dashboard() {
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([api.get("/products"), api.get("/categories"), api.get("/orders")])
@@ -19,6 +20,9 @@ export default function Dashboard() {
       .catch((err) => {
         console.error("Error loading dashboard:", err);
         setError(err.response?.data?.error || "Some dashboard data could not be loaded.");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -43,6 +47,7 @@ export default function Dashboard() {
       </div>
 
       {error && <div className="error-text admin-error">{error}</div>}
+      {loading && <div className="admin-subtitle">Loading the latest catalogue and order data...</div>}
 
       <div className="stat-cards">
         <div className="stat-card">

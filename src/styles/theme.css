@@ -773,6 +773,28 @@ textarea.form-control {
   color: var(--text-muted);
 }
 
+.product-stock-status {
+  margin: 18px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.product-stock-status.out-of-stock,
+.product-unavailable {
+  color: #d16b6b;
+}
+
+.app-error-page {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-error-page h1 {
+  color: var(--text);
+}
+
 @media (max-width: 900px) {
   .nav-links { display: none; }
   .category-grid { grid-template-columns: 1fr; }

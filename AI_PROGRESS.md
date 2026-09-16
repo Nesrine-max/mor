@@ -1,6 +1,6 @@
 # MOR AI handoff and progress log
 
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 ## Purpose
 
@@ -66,6 +66,8 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Deployed `create-order` with gateway JWT verification disabled for guest website requests, while keeping `update-order-status` JWT-protected.
 - Added `0002_product_image_storage.sql`, creating the hosted `product-images` bucket with public reads, 5 MB JPG/PNG/WebP limits, and admin-only writes.
 - Added Supabase product-image uploads, previews, validation, and admin product loading/error/empty states.
+- Added migrations `0003`–`0005` to move authorization helpers into a non-exposed schema, tighten function search paths, add foreign-key indexes, and separate public catalogue reads from admin reads.
+- Added stock-aware product detail/cart behavior, admin category/dashboard error states, a top-level application error fallback, `robots.txt`, and static-host security/cache headers.
 - Added the linked Supabase URL and publishable key to the ignored local `.env` for local frontend testing; no service-role key was added to the repository or frontend.
 - Verified the hosted catalogue endpoint returns HTTP 200, guest order validation returns the expected HTTP 400, and unauthenticated status updates return HTTP 403.
 - Fixed the home page's empty-catalogue state and added `public/favicon.svg`; browser-tested the home, shop, order-empty, and admin-login routes with no application console errors.
@@ -132,6 +134,7 @@ Existing browser storage keys:
 14. Size selectors are now buttons; unavailable-size disabling and stock-aware selection still need implementation.
 15. `.env` and `node_modules` are removed from the Git index and ignored locally; the cleanup is included in the pushed implementation commit.
 16. There are no automated test files.
+17. Supabase advisors now report only the managed `public.rls_auto_enable()` warning; MOR-owned helper/function warnings were removed.
 
 ## Agreed target order model
 
@@ -163,7 +166,7 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 3. Done: `.gitignore` and `.env.example` are present.
 4. Done: the tracked `.env` was removed from Git without printing its contents; review/rotate any historical credential if one existed.
 5. Done: `node_modules` was removed from version control without deleting the local folder.
-6. Done: authenticate the CLI, link project `fsstqthwpzeypxdasdjo`, and apply migration `0001_initial_schema.sql`.
+6. Done: authenticate the CLI, link project `fsstqthwpzeypxdasdjo`, and apply migrations `0001` through `0005`.
 7. Done: deploy `create-order` and `update-order-status`; keep the former guest-accessible and the latter JWT-protected.
 8. Done: validate public catalogue reads, guest-order validation, and the protected admin endpoint against the hosted project.
 9. Create the first administrator in Supabase Auth, then update that user's profile role to `admin` through the SQL editor.
@@ -258,6 +261,17 @@ After implementation begins, record every relevant command and result here. A fa
 - Verified `npm test -- --watchAll=false --passWithNoTests`, `npm run build`, and `git diff --check` after the implementation.
 - Committed and pushed as `33a48413` (`Add product image storage workflow`).
 - Next exact task: promote the first Auth user to admin, add real categories/products, test one image upload, then complete the end-to-end order flow.
+
+### 2026-09-16 - Security, inventory UX, and hosting preparation
+
+- Applied migrations `0003_security_hardening.sql`, `0004_split_public_catalogue_policies.sql`, and `0005_consolidate_catalogue_read_policies.sql` to the hosted project.
+- `supabase db lint --linked` reports no schema errors. Advisors now report only Supabase's managed `public.rls_auto_enable()` warning; application-owned warnings were addressed.
+- An initial post-hardening anonymous catalogue check returned permission errors because public policies invoked an authenticated-only helper; migration `0004` split those policies, and migration `0005` consolidated authenticated reads. Final public checks return HTTP 200 for categories, products, and orders.
+- Added stock-aware add-to-bag/cart quantity behavior, admin category/dashboard error and empty states, a global React error boundary, `public/robots.txt`, and `public/_headers` for static hosting.
+- Browser smoke-tested the empty home/shop/product and protected admin routes with no application console errors on the final pages.
+- Verified `npm test -- --watchAll=false --passWithNoTests`, `npm run build`, `git diff --check`, migration sync, and hosted schema lint.
+- Commits pushed: `5db52713` (security hardening), `e4516b40` (public catalogue policy fix), `bb9d235c` (policy consolidation).
+- Remaining blocker: Supabase still has zero users/products/categories/orders; the first admin account, real catalogue data, legacy-key rotation, and hosting-account setup require user-side business/account input.
 
 ## How to update this handoff
 

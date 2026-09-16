@@ -5,31 +5,56 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  function loadCategories() {
-    api.get("/categories").then((res) => setCategories(res.data));
+  async function loadCategories() {
+    setLoading(true);
+    try {
+      const res = await api.get("/categories");
+      setCategories(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Could not load categories.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(loadCategories, []);
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim()) return;
+    setSaving(true);
+    setError("");
 
-    if (editingId) {
-      await api.put(`/categories/${editingId}`, { name });
-    } else {
-      await api.post("/categories", { name });
+    try {
+      if (editingId) {
+        await api.put(`/categories/${editingId}`, { name });
+      } else {
+        await api.post("/categories", { name });
+      }
+      setName("");
+      setEditingId(null);
+      await loadCategories();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Could not save category.");
+    } finally {
+      setSaving(false);
     }
-    setName("");
-    setEditingId(null);
-    loadCategories();
   }
 
   async function handleDelete(id) {
     if (!window.confirm("Delete this category? Its products will also be removed.")) return;
-    await api.delete(`/categories/${id}`);
-    loadCategories();
+    try {
+      await api.delete(`/categories/${id}`);
+      await loadCategories();
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Could not delete category.");
+    }
   }
 
   function startEdit(c) {
@@ -43,6 +68,8 @@ export default function AdminCategories() {
         <h1 className="page-title">Categories</h1>
       </div>
 
+      {error && <div className="error-text" role="alert" style={{ marginBottom: 20 }}>{error}</div>}
+
       <form onSubmit={handleSubmit} style={{ display: "flex", gap: 10, marginBottom: 30, maxWidth: 500 }}>
         <input
           className="form-control"
@@ -50,8 +77,8 @@ export default function AdminCategories() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button className="btn" type="submit">
-          {editingId ? "Update" : "Add"}
+        <button className="btn" type="submit" disabled={saving}>
+          {saving ? "Saving..." : editingId ? "Update" : "Add"}
         </button>
         {editingId && (
           <button
@@ -67,6 +94,7 @@ export default function AdminCategories() {
         )}
       </form>
 
+      <div className="admin-table-wrap">
       <table className="admin-table">
         <thead>
           <tr>
@@ -76,7 +104,11 @@ export default function AdminCategories() {
           </tr>
         </thead>
         <tbody>
-          {categories.map((c) => (
+          {loading && <tr><td colSpan="3" className="empty-state">Loading categories...</td></tr>}
+          {!loading && categories.length === 0 && (
+            <tr><td colSpan="3" className="empty-state">No categories yet. Add the first one above.</td></tr>
+          )}
+          {!loading && categories.map((c) => (
             <tr key={c.id}>
               <td>{c.name}</td>
               <td>{c.slug}</td>
@@ -92,6 +124,7 @@ export default function AdminCategories() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

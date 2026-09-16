@@ -20,6 +20,7 @@ The order flow records requests for real-life cash fulfilment. It does not proce
 - React Router 6 for client-side routing.
 - Axios for legacy API requests, with a Supabase data-layer adapter for production mode.
 - Supabase Auth and database/function access through `@supabase/supabase-js` when configured.
+- Supabase Storage for admin-managed product images.
 - React Context for cart state and admin authentication state.
 - Plain CSS with Google Fonts (`Cormorant Garamond` and `Jost`).
 
@@ -177,6 +178,7 @@ The implementation also adds `src/config.js`, `src/pages/OrderRequest.js`, `src/
 ## Current limitations and integration notes
 
 - The hosted `MOR` Supabase project is connected. Migrations `0001_initial_schema.sql` and `0002_product_image_storage.sql` are applied, and both order functions are deployed.
+- Migrations `0003`–`0005` harden authorization helpers and keep public catalogue reads separate from admin-only reads.
 - The catalogue is empty until the first admin adds categories and products. Supabase-mode product management supports public image URLs and validated uploads to the `product-images` bucket.
 - The customer and admin order screens require the deployed `create-order` and `update-order-status` functions when Supabase mode is enabled.
 - The hosted migration includes transactional stock reservation/release and status-history writes; a full real-data order test still remains.

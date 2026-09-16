@@ -49,8 +49,11 @@ export default function ProductDetail() {
   if (!product) return <div className="empty-state">Loading...</div>;
 
   const sizes = parseSizes(product.sizes);
+  const stock = Number(product.stock ?? product.stock_quantity ?? 0);
+  const canAdd = Boolean(size) && stock > 0;
 
   function handleAdd() {
+    if (!canAdd) return;
     addToCart(product, size, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -72,7 +75,7 @@ export default function ProductDetail() {
             <div className="form-group">
               <label>Select Size</label>
               <div className="size-selector">
-                {sizes.map((s) => (
+                {sizes.length > 0 ? sizes.map((s) => (
                     <button
                       type="button"
                       key={s}
@@ -81,13 +84,16 @@ export default function ProductDetail() {
                   >
                     {s}
                     </button>
-                ))}
+                )) : <span className="product-unavailable">No sizes currently listed.</span>}
               </div>
             </div>
           </div>
 
-          <button className="btn" onClick={handleAdd}>
-            {added ? "Added to Bag ✓" : "Add to Bag"}
+          <p className={`product-stock-status ${stock > 0 ? "" : "out-of-stock"}`}>
+            {stock > 0 ? `${stock} available` : "Out of stock"}
+          </p>
+          <button className="btn" onClick={handleAdd} disabled={!canAdd}>
+            {added ? "Added to Bag ✓" : stock > 0 ? "Add to Bag" : "Unavailable"}
           </button>
         </div>
       </div>
