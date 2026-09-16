@@ -1,7 +1,22 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+function getServiceKey() {
+  const secretKeys = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeys) {
+    try {
+      const parsed = JSON.parse(secretKeys) as Record<string, unknown>;
+      if (typeof parsed.default === "string" && parsed.default) return parsed.default;
+    } catch {
+      // Fall back to the legacy runtime variable if the new key map is unavailable.
+    }
+  }
+
+  return Deno.env.get("SUPABASE_SECRET_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+}
+
+const serviceKey = getServiceKey();
 const allowedOrigin = Deno.env.get("APP_ORIGIN") ?? "*";
 
 const corsHeaders = {
@@ -10,7 +25,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+const adminClient = createClient(supabaseUrl, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
@@ -51,7 +66,7 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!supabaseUrl || !serviceKey) {
     return jsonResponse({ error: "Order service is not configured" }, 500);
   }
 

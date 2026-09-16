@@ -294,6 +294,12 @@ After implementation begins, record every relevant command and result here. A fa
 - Real-browser checks: home and women collection rendered the empty-catalogue state, direct `/admin/dashboard` redirected to `/admin/login`, Supabase catalogue requests returned HTTP 200, and the final admin-login page reported zero console errors and zero warnings.
 - Committed and pushed the deployment/docs slice as `cfe56249` and the login polish as `8d6856bd`; the current `main` branch is deployed to the stable Vercel alias.
 
+### 2026-09-16 - Secret-key migration readiness
+
+- Updated both Supabase Edge Functions to prefer the hosted `SUPABASE_SECRET_KEYS["default"]` map, with `SUPABASE_SECRET_KEY` and legacy `SUPABASE_SERVICE_ROLE_KEY` fallbacks for compatibility.
+- Redeployed `create-order` and `update-order-status` to the linked project; the guest order validation/CORS check still passes with HTTP 400 and the production origin.
+- The user can now create the new secret key in Supabase `Project Settings` → `API Keys`, test the live functions, and deactivate the exposed legacy `service_role` key without requiring a code change.
+
 ## How to update this handoff
 
 After each work session, add a dated entry containing:

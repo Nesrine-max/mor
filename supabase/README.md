@@ -23,12 +23,13 @@ The repository is currently linked to the hosted `MOR` project (`fsstqthwpzeypxd
 4. Create the first administrator in Supabase Auth.
 5. Set that user's `profiles.role` to `admin` using the protected SQL editor.
 6. The `0002_product_image_storage.sql` migration creates the public `product-images` bucket, limits uploads to 5 MB JPG/PNG/WebP files, and adds admin-only write policies.
-7. Set the Edge Function secrets in the Supabase dashboard:
+7. Create the new publishable/secret API key pair from `Project Settings` → `API Keys` when the project still only has legacy keys. The deployed functions prefer the platform-provided `SUPABASE_SECRET_KEYS["default"]` value and retain `SUPABASE_SERVICE_ROLE_KEY` as a compatibility fallback:
 
    ```text
-   SUPABASE_SERVICE_ROLE_KEY=<server-only key>
    APP_ORIGIN=<deployed frontend origin>
    ```
+
+   `APP_ORIGIN` is a custom function secret. The Supabase secret-key map is injected automatically; never copy a secret key into the repository, React environment, or public hosting variables.
 
 8. Deploy both functions:
 
@@ -50,6 +51,8 @@ The repository is currently linked to the hosted `MOR` project (`fsstqthwpzeypxd
    When both variables exist, `src/api.js` and `AdminAuthContext` use Supabase. Without them, the legacy Axios API remains the fallback.
 
 The service-role key must only exist in the Edge Function environment. It must never be added to `.env.example`, React code, or a public deployment variable.
+
+For a leaked legacy `service_role` key, create the new secret key first, verify the deployed functions, then deactivate the old `service_role` key under `Project Settings` → `API Keys` → `Legacy API Keys`. Do not revoke the JWT signing key as part of this routine key replacement.
 
 ## Not finished yet
 
