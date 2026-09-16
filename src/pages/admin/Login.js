@@ -6,17 +6,21 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("admin@mor.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useAdminAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
     try {
       await login(email, password);
       navigate("/admin/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed.");
+      setError(err.response?.data?.error || err.message || "Login failed.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -27,28 +31,37 @@ export default function AdminLogin() {
           M<span>O</span>R <span style={{ fontSize: 13, color: "var(--text-muted)" }}>ADMIN</span>
         </h1>
         <div className="form-group">
-          <label>Email</label>
+          <label htmlFor="admin-email">Email</label>
           <input
+            id="admin-email"
             className="form-control"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
             required
           />
         </div>
         <div className="form-group">
-          <label>Password</label>
+          <label htmlFor="admin-password">Password</label>
           <input
+            id="admin-password"
             className="form-control"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
             required
           />
         </div>
         {error && <div className="error-text">{error}</div>}
-        <button className="btn" style={{ width: "100%", marginTop: 10 }} type="submit">
-          Sign In
+        <button
+          className="btn"
+          style={{ width: "100%", marginTop: 10 }}
+          type="submit"
+          disabled={submitting}
+        >
+          {submitting ? "Signing In…" : "Sign In"}
         </button>
       </form>
     </div>
