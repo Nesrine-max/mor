@@ -61,6 +61,20 @@ REACT_APP_SUPABASE_PUBLISHABLE_KEY=
 
    The frontend is served at [http://localhost:3000](http://localhost:3000). A configured Supabase project or legacy backend is required for products, categories, orders, and admin login.
 
+## Free production deployment
+
+The repository is prepared for a static Vercel or Cloudflare Pages deployment without a GitHub Actions workflow. The current production deployment is Vercel at [mor-ashen.vercel.app](https://mor-ashen.vercel.app).
+
+- Connect the GitHub repository from the Vercel or Cloudflare Pages dashboard, or deploy directly with the authenticated CLI.
+- Build command: `npm run build`.
+- Output directory: `build`.
+- Production branch: `main`.
+- Add `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_PUBLISHABLE_KEY`, `REACT_APP_CURRENCY`, and `REACT_APP_LOCALE` as Pages environment variables.
+- Never add `SUPABASE_SERVICE_ROLE_KEY` or any secret key to Pages; the Edge Functions keep server-only secrets.
+- `public/_redirects` handles SPA routes on Pages-style hosts, `public/_headers` adds static-hosting headers there, and `vercel.json` adds the equivalent Vercel headers.
+
+The current Vercel origin is configured as the Edge Function `APP_ORIGIN` secret. If the frontend is moved to another host, set that secret to the new exact origin and repeat the public smoke test. A custom domain is optional; the free `vercel.app` or `pages.dev` address is enough for the first launch.
+
 ## Available scripts
 
 | Command | Purpose |

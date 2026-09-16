@@ -18,3 +18,5 @@ yarn-error.log*
 # Test and coverage output
 coverage/
 .playwright-cli/
+
+.vercel/

@@ -273,6 +273,17 @@ After implementation begins, record every relevant command and result here. A fa
 - Commits pushed: `5db52713` (security hardening), `e4516b40` (public catalogue policy fix), `bb9d235c` (policy consolidation).
 - Remaining blocker: Supabase still has zero users/products/categories/orders; the first admin account, real catalogue data, legacy-key rotation, and hosting-account setup require user-side business/account input.
 
+### 2026-09-16 - Vercel production deployment
+
+- Created and linked the Vercel project `hz16/mor` using the authenticated Vercel CLI.
+- Added production and preview frontend variables for the hosted Supabase URL, publishable key, currency, and locale. No service-role or other secret key was added to Vercel.
+- Deployed the React build to the stable production origin: `https://mor-ashen.vercel.app`.
+- Set the Supabase Edge Function `APP_ORIGIN` secret to the Vercel production origin.
+- Added `vercel.json` for Vercel-native security headers and immutable caching for hashed static assets. Kept `public/_redirects` and `public/_headers` for Cloudflare Pages compatibility.
+- GitHub auto-linking was unavailable because the authenticated Vercel account does not have the repository permissions required for automatic integration. Direct CLI deployment works, and no GitHub Actions workflow was added.
+- The Vercel project is configured for `npm run build` with `build` as the output directory. Production smoke checks and direct-route checks are recorded after the final header deployment.
+- Remaining blocker: the hosted database still has zero users/products/categories/orders. The first admin, real catalogue data, currency/contact/delivery confirmation, service-key rotation, real image upload, and complete website/admin order test require user-side business/account input.
+
 ## How to update this handoff
 
 After each work session, add a dated entry containing:

@@ -2,7 +2,7 @@
 
 ## 1. Product definition
 
-Implementation status: Phase 0 is implemented, the local Phase 1 database/order foundation exists, and the Phase 2 Supabase data-layer/Auth adapter is now wired behind environment flags. No Supabase project is connected and the app is not production-ready yet.
+Implementation status: Phase 0 is implemented, the hosted Phase 1 Supabase database/storage/order foundation is deployed, the Phase 2 Supabase data-layer/Auth adapter is wired behind environment flags, and the React frontend is deployed to Vercel. The app is not production-ready yet because the first admin, real catalogue, and full live order test remain.
 
 MOR should become a customer-facing clothing catalogue and an offline order-operations system.
 
@@ -28,7 +28,7 @@ The initial target is a small, production-usable pilot hosted at zero monthly ho
 ```text
 Customer browser / admin browser
               |
-      React app on Cloudflare Pages
+      React app on Vercel or Cloudflare Pages
               |
    Supabase Auth + Postgres + Storage
               |
@@ -37,7 +37,7 @@ Customer browser / admin browser
 
 ### Frontend hosting
 
-Deploy the existing Create React App frontend to Cloudflare Pages:
+Deploy the existing Create React App frontend to Vercel or Cloudflare Pages:
 
 - Build command: `npm run build`
 - Output directory: `build`
@@ -46,7 +46,7 @@ Deploy the existing Create React App frontend to Cloudflare Pages:
 - Environment variables configured in the hosting dashboard
 - Preview deployment for pull requests
 
-Cloudflare Pages is suitable for the static React client and provides automatic Git deployments. The free plan currently lists limits such as 500 builds per month, 20,000 files per site, and a 25 MiB maximum individual asset size. See the [Cloudflare Pages React guide](https://developers.cloudflare.com/pages/framework-guides/deploy-a-react-site/) and [Pages limits](https://developers.cloudflare.com/pages/platform/limits/).
+Vercel and Cloudflare Pages are suitable for the static React client. The current production deployment is Vercel at `https://mor-ashen.vercel.app`; the repository also retains Pages-compatible `_redirects` and `_headers` files. See the [Cloudflare Pages React guide](https://developers.cloudflare.com/pages/framework-guides/deploy-a-react-site/) and [Vercel CRA documentation](https://vercel.com/docs/frameworks/frontend/create-react-app).
 
 ### Backend, database, authentication, and images
 
@@ -65,7 +65,7 @@ Supabase Free currently includes a small database, file storage, authentication,
 ### Automation and analytics
 
 - Use GitHub for versioned commits and pushes; add automated CI later only if the project needs it.
-- Keep deployment connected to Cloudflare Pages so only verified changes reach production.
+- Keep deployment connected to Vercel (current) or Cloudflare Pages so only verified changes reach production.
 - Add Cloudflare Web Analytics after launch for privacy-friendly traffic and performance data. See [Cloudflare Web Analytics](https://developers.cloudflare.com/web-analytics/about/).
 - Use manual database exports until there is revenue for a paid backup plan. Never store customer exports in a public repository.
 
@@ -79,7 +79,7 @@ The repository is currently a frontend-only Create React App project:
 - Cart state is persisted in `localStorage` under `mor_cart`.
 - Legacy admin token/email state is persisted in `localStorage` under `mor_admin_token` and `mor_admin_email`; Supabase mode uses managed Auth sessions.
 - Supabase mode uses `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_PUBLISHABLE_KEY`; otherwise Axios expects `REACT_APP_API_URL` or `http://localhost:5000/api`.
-- No deployed backend or connected database exists yet. A local Supabase migration and order Edge Function foundation now exists, but it has not been applied to a project.
+- The hosted `MOR` Supabase project is connected; migrations `0001`–`0005`, storage policies, and both order Edge Functions are deployed.
 - `Home.js` uses placeholder Picsum category images.
 - `Cart.js` now links to a cash-only order-request form; no online checkout or payment handling is present.
 - Prices use configurable currency/locale settings, and delivery is displayed as coordinated separately.
@@ -527,15 +527,15 @@ Complete this before connecting deployment:
 
 ### Phase 6: deployment and launch
 
-- [ ] Create the Cloudflare Pages project.
-- [ ] Configure `npm run build` and `build` output.
-- [ ] Add production environment variables.
+- [x] Create the Vercel project.
+- [x] Configure `npm run build` and `build` output.
+- [x] Add production environment variables.
 - [ ] Deploy a preview from a branch.
-- [ ] Run a production smoke test.
-- [ ] Confirm direct routes load correctly.
-- [ ] Confirm Supabase policies work against production.
-- [ ] Confirm images and order functions work on the public URL.
-- [ ] Publish the free `pages.dev` URL.
+- [x] Run a production smoke test.
+- [x] Confirm direct routes load correctly.
+- [x] Confirm public Supabase catalogue policies and guest order validation work against production.
+- [ ] Confirm a real image upload and website/admin order flow on the public URL.
+- [x] Publish the free `vercel.app` URL.
 - [ ] Prepare a simple customer support process.
 
 **Exit condition:** a real customer can submit a request and the business can fulfil it using the admin panel.
