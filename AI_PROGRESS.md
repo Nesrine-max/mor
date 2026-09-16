@@ -307,6 +307,13 @@ After implementation begins, record every relevant command and result here. A fa
 - Verified hosted counts: `users=2`, `admins=1`, `categories=0`, `products=0`, and `orders=0`.
 - Remaining user action: sign in at `https://mor-ashen.vercel.app/admin/login`, then add the real catalogue or provide the catalogue data for CLI import.
 
+### 2026-09-16 - Burner admin password reset and auth verification
+
+- Reset the password for the requested burner admin account through Supabase Auth Admin API without storing the password in the repository or project configuration.
+- Verified password login succeeds with the public Supabase client and the profile returns `role=admin`.
+- Verified the protected `update-order-status` function accepts the authenticated admin session and returns its expected `Order ID is required` validation response for an empty request.
+- The temporary password was returned only to the user; it is not recorded in this handoff.
+
 ## How to update this handoff
 
 After each work session, add a dated entry containing:
