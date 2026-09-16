@@ -2,7 +2,7 @@
 
 ## 1. Product definition
 
-Implementation status: Phase 0 is implemented, the hosted Phase 1 Supabase database/storage/order foundation is deployed, the Phase 2 Supabase data-layer/Auth adapter is wired behind environment flags, the currency is configured as DZD, and the React frontend is deployed to Vercel. The app is not production-ready yet because the catalogue is incomplete, business contact/delivery details are missing, and the real live order test remains.
+Implementation status: Phase 0 is implemented, the hosted Phase 1 Supabase database/storage/order foundation is deployed, the Phase 2 Supabase data-layer/Auth adapter is wired behind environment flags, a 25-item demo catalogue is seeded for testing, the currency is configured as DZD, and the React frontend is deployed to Vercel. The app is not production-ready yet because the real MOR catalogue, business contact/delivery details, and a real live order test remain.
 
 MOR should become a customer-facing clothing catalogue and an offline order-operations system.
 
@@ -79,7 +79,7 @@ The repository is currently a frontend-only Create React App project:
 - Cart state is persisted in `localStorage` under `mor_cart`.
 - Legacy admin token/email state is persisted in `localStorage` under `mor_admin_token` and `mor_admin_email`; Supabase mode uses managed Auth sessions.
 - Supabase mode uses `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_PUBLISHABLE_KEY`; otherwise Axios expects `REACT_APP_API_URL` or `http://localhost:5000/api`.
-- The hosted `MOR` Supabase project is connected; migrations `0001`–`0005`, storage policies, and both order Edge Functions are deployed.
+- The hosted `MOR` Supabase project is connected; migrations `0001`–`0007`, storage policies, and both order Edge Functions are deployed. Migration `0007` seeds 25 demo products from DummyJSON for testing only.
 - `Home.js` uses placeholder Picsum category images.
 - `Cart.js` now links to a cash-only order-request form; no online checkout or payment handling is present.
 - Prices use configurable currency/locale settings, and delivery is displayed as coordinated separately.
@@ -461,7 +461,7 @@ Complete this before connecting deployment:
 - [x] Create the Supabase project.
 - [x] Initialize the Supabase folder and migrations locally.
 - [x] Create tables, indexes, constraints, and status checks locally.
-- [ ] Seed categories and sample products.
+- [x] Seed categories and sample products for hosted testing; replace the demo records with MOR's real catalogue before launch.
 - [ ] Configure the admin Auth user.
 - [x] Create the admin role/profile policy.
 - [x] Enable and test RLS.

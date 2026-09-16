@@ -7,13 +7,15 @@ This directory contains the first database and server-function foundation for MO
 - `migrations/0001_initial_schema.sql` creates profiles, categories, products, product images, orders, order items, and order status history.
 - `migrations/0002_product_image_storage.sql` creates the public-read/admin-write product image bucket.
 - `migrations/0003`–`0005` harden helper functions, RLS policies, and catalogue read-policy performance.
+- `migrations/0006_currency_dzd.sql` makes DZD the database default currency.
+- `migrations/0007_seed_demo_inventory.sql` adds 25 clearly prefixed demo products across seven categories for storefront testing.
 - The migration enables Row Level Security and gives public users catalogue reads while restricting administration to the admin role.
 - `functions/create-order/index.ts` validates customer/admin order requests and calls the trusted `create_order` database function.
 - `functions/update-order-status/index.ts` protects admin status changes and calls the transactional status/history/stock function.
 
 No payment provider is used. The functions record cash order requests, delivery progress, status history, and stock transitions only.
 
-The repository is currently linked to the hosted `MOR` project (`fsstqthwpzeypxdasdjo`). Migrations `0001`–`0005` are applied, and both Edge Functions are deployed. The catalogue is still empty until real products and categories are added.
+The repository is currently linked to the hosted `MOR` project (`fsstqthwpzeypxdasdjo`). Migrations `0001`–`0007` are applied, and both Edge Functions are deployed. The hosted catalogue contains the original user-created product plus 25 demo products. The demo records use placeholder data and external thumbnail URLs from [DummyJSON](https://dummyjson.com/docs/products); replace them with MOR's real inventory before launch.
 
 ## Setup when a Supabase project is available
 
@@ -56,8 +58,8 @@ For a leaked legacy `service_role` key, create the new secret key first, verify 
 
 ## Not finished yet
 
-- One Supabase Auth user is promoted to `admin`; the live admin sign-in and first real product upload still need to be tested.
-- The migration and functions are deployed, but the full website-to-admin order flow still needs live testing with real catalogue records.
+- One Supabase Auth user is promoted to `admin`; the live admin sign-in works, but a real MOR product upload still needs to be tested.
+- The deployed website-to-admin order flow has been tested against a seeded demo product, including DZD totals and stock reservation/release. A real MOR customer order still needs to be tested before launch.
 - A real admin upload still needs to be tested after the first admin account is promoted.
 - Supabase's remaining advisor warning concerns the managed `public.rls_auto_enable()` helper, not MOR's application functions or policies.
-- DZD is configured for the first market. Real product data/images, contact details, and delivery rules still need to be completed.
+- DZD is configured for the first market. Real product data/images, contact details, delivery rules, and the service-key rotation still need to be completed.

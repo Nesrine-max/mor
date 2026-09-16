@@ -73,7 +73,7 @@ This file is a continuation log for the next AI or developer working on MOR. It 
 - Fixed the home page's empty-catalogue state and added `public/favicon.svg`; browser-tested the home, shop, order-empty, and admin-login routes with no application console errors.
 - Committed the implementation as `3fdf8fc2` and pushed it to `origin/main`.
 - Updated `README.md` to describe the new order flow and current integration boundary.
-- The hosted Supabase path is now exercised against the live `MOR` project; the catalogue is currently empty and no admin account has been promoted yet.
+- The hosted Supabase path is exercised against the live `MOR` project; it now contains the original user-created product plus 25 demo products across seven seeded categories, and one admin account is promoted.
 - No online payment or courier integration was added.
 
 ## Current repository facts
@@ -118,13 +118,13 @@ Existing browser storage keys:
 
 ## Important findings and known problems
 
-1. The hosted Supabase project is linked and deployed; one category and one product now exist, but the catalogue is incomplete and the current product has zero stock until the real inventory is entered.
+1. The hosted Supabase project is linked and deployed; one user-created product and 25 demo products now exist across eight total categories, but the demo catalogue must be replaced or supplemented with MOR's real inventory before launch.
 2. One Supabase Auth user is now promoted to `admin`; the user still needs to sign in once through the live admin page to complete the browser-level verification.
 3. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
 4. The home page uses Picsum placeholder category images.
 5. Product image storage and admin upload support are deployed; the first real upload still needs testing after an admin account is promoted.
 6. Order totals are recalculated by the hosted `create_order` database function; the browser only sends item IDs, sizes, and quantities.
-7. Stock reservation/release is deployed and passed schema/endpoint checks, but needs a real product/order/admin end-to-end test.
+7. Stock reservation/release is deployed and has passed a hosted end-to-end test using an imported demo product; a real MOR product/order/admin test remains.
 8. Supabase admin status updates use the protected `update-order-status` function; legacy API mode still depends on `/orders/:id`.
 9. Supabase mode uses managed Auth and profile authorization; custom token/email storage remains only for legacy API mode.
 10. Product, category, dashboard, and catalogue screens now have loading, empty, save, and fetch failure states where their current flows need them; broader automated coverage is still missing.
@@ -165,13 +165,13 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 3. Done: `.gitignore` and `.env.example` are present.
 4. Done: the tracked `.env` was removed from Git without printing its contents; review/rotate any historical credential if one existed.
 5. Done: `node_modules` was removed from version control without deleting the local folder.
-6. Done: authenticate the CLI, link project `fsstqthwpzeypxdasdjo`, and apply migrations `0001` through `0005`.
+6. Done: authenticate the CLI, link project `fsstqthwpzeypxdasdjo`, and apply migrations `0001` through `0007`.
 7. Done: deploy `create-order` and `update-order-status`; keep the former guest-accessible and the latter JWT-protected.
 8. Done: validate public catalogue reads, guest-order validation, and the protected admin endpoint against the hosted project.
 9. Done: create the first administrator in Supabase Auth and promote that user's profile role to `admin` through the linked CLI.
-10. Add the remaining categories/products and real images; DZD is configured, while contact details and delivery rules still need confirmation.
-11. Done: add the `product-images` storage bucket and admin image policies; test a real upload after admin setup.
-12. Complete a real website order and admin-created order test, including status transitions, stock reservation/release, and cash/delivery tracking.
+10. Replace or supplement the 25 demo categories/products with MOR's real catalogue and real images; DZD is configured, while contact details and delivery rules still need confirmation.
+11. Done: add the `product-images` storage bucket and admin image policies; a temporary hosted admin upload passed, but a real MOR product upload remains.
+12. Done for a seeded demo product: website order creation, admin confirmation/cancellation, DZD totals, stock reservation/release, and cleanup passed. Still needed: one real website order and one real admin-created order with the business workflow.
 13. Replace placeholder images and complete product/image management.
 14. Done: add deployment configuration. Still needed: automated tests, analytics, and manual backup/export procedures.
 15. Done for the current Vercel deployment; if hosting is migrated to Cloudflare Pages later, repeat the production launch checklist there.
@@ -199,7 +199,7 @@ npm test -- --watchAll=false --passWithNoTests
 No tests found, exiting with code 0
 ```
 
-The latest build completed successfully after the conditional Supabase data-layer/Auth adapter, product image upload, Vercel deployment configuration, and admin-login accessibility changes. Migrations `0001` through `0005` are applied to the hosted project; they have not been run against a local Docker Postgres instance.
+The latest build completed successfully after the conditional Supabase data-layer/Auth adapter, product image upload, Vercel deployment configuration, admin-login accessibility changes, and demo inventory seed. Migrations `0001` through `0007` are applied to the hosted project; they have not been run against a local Docker Postgres instance.
 
 ### 2026-09-14 - First implementation slice verified
 
@@ -328,6 +328,15 @@ After implementation begins, record every relevant command and result here. A fa
 - Verified the stable Vercel site in a real browser at `/admin/login` and `/shop/women`: the admin form has no prefilled account, the live catalogue renders the user-created product as `DZD 500.00`, and both pages report zero browser console errors or warnings.
 - No temporary smoke users, products, categories, orders, or storage objects remain. The real catalogue currently contains one user-created women’s product with zero stock; it is preserved and is not orderable until inventory is entered.
 - Remaining launch inputs are business-owned: the complete catalogue and images, contact/WhatsApp details, delivery/pickup rules, and one real customer order test. Do not mark the plan fully complete until those are supplied and verified.
+
+### 2026-09-16 - Demo inventory import and live catalogue verification
+
+- Added and applied `supabase/migrations/0007_seed_demo_inventory.sql`, sourced from DummyJSON's documented placeholder products endpoint. It adds 25 demo products across Tops, Men's Shirts, Women's Dresses, Men's Shoes, Women's Shoes, Women's Bags, and Sunglasses; every seeded item uses DZD, positive stock, sizes, and a public thumbnail URL.
+- The import is intentionally marked as demo data in the migration and documentation. The existing user-created `IDKF` product was not deleted or overwritten.
+- Verified 25/25 external thumbnails return HTTP 200, the public Supabase catalogue returns all 25 seeded records, and all seeded records use DZD with stock.
+- Ran a targeted hosted order smoke test: website order creation returned pending/DZD with correct totals and production CORS; the deployed admin status function confirmed one unit, reserved stock, cancelled the order, released the unit, and removed the temporary order/admin records. All 21 checks passed.
+- Real-browser verification passed on Vercel: Women shows 15 pieces, Men shows 8, Sportswear shows 3, a seeded product detail can be added to the bag, the cart and cash order-request form show DZD totals, and the tested pages report zero console errors or warnings.
+- Current blockers remain business-owned: replace demo data/images with MOR's real inventory, provide contact/delivery details, run real customer/admin order tests, and rotate any legacy service key after verifying the replacement key path.
 
 ## How to update this handoff
 

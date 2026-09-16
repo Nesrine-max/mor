@@ -191,9 +191,9 @@ The implementation also adds `src/config.js`, `src/pages/OrderRequest.js`, `src/
 
 ## Current limitations and integration notes
 
-- The hosted `MOR` Supabase project is connected. Migrations `0001_initial_schema.sql` and `0002_product_image_storage.sql` are applied, and both order functions are deployed.
+- The hosted `MOR` Supabase project is connected. Migrations `0001`–`0007` are applied, and both order functions are deployed.
 - Migrations `0003`–`0005` harden authorization helpers and keep public catalogue reads separate from admin-only reads.
-- The catalogue is empty until the first admin adds categories and products. Supabase-mode product management supports public image URLs and validated uploads to the `product-images` bucket.
+- The hosted catalogue contains the original user-created item plus 25 demo products from the documented [DummyJSON placeholder catalogue](https://dummyjson.com/docs/products). The demo records use DZD prices, stock, and public thumbnail URLs for testing; replace them with MOR's real catalogue before accepting real orders. Supabase-mode product management supports public image URLs and validated uploads to the `product-images` bucket.
 - The customer and admin order screens require the deployed `create-order` and `update-order-status` functions when Supabase mode is enabled.
 - The hosted migration includes transactional stock reservation/release and status-history writes; a full real-data order test still remains.
 - Footer links for shipping, returns, size guide, about, and contact currently point to `#!` placeholders.
