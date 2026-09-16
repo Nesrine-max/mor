@@ -321,6 +321,14 @@ After implementation begins, record every relevant command and result here. A fa
 - Ran a temporary hosted fixture suite and removed all fixtures afterward. It passed: temporary admin creation/login, admin-only image upload plus public image read, DZD catalogue reads, customer website order creation, CORS, server-side totals, invalid-size rejection, insufficient-stock rejection, guest offline-order rejection, order status progression, delivery progression, cash collection, stock reservation/consumption/release, status history, and public order isolation.
 - The remaining hosted catalogue records are user-created, not test fixtures; the existing product currency was updated from `USD` to `DZD` without changing its price or stock.
 
+### 2026-09-16 - Final DZD production verification
+
+- Confirmed hosted migrations `0001` through `0006` are all applied and the Git worktree is clean before this handoff update.
+- Passed `npm test -- --watchAll=false --passWithNoTests`, `npm run build`, and `git diff --check`. The test command reports no test files yet; the hosted smoke suite above covers the order and admin flows.
+- Verified the stable Vercel site in a real browser at `/admin/login` and `/shop/women`: the admin form has no prefilled account, the live catalogue renders the user-created product as `DZD 500.00`, and both pages report zero browser console errors or warnings.
+- No temporary smoke users, products, categories, orders, or storage objects remain. The real catalogue currently contains one user-created women’s product with zero stock; it is preserved and is not orderable until inventory is entered.
+- Remaining launch inputs are business-owned: the complete catalogue and images, contact/WhatsApp details, delivery/pickup rules, and one real customer order test. Do not mark the plan fully complete until those are supplied and verified.
+
 ## How to update this handoff
 
 After each work session, add a dated entry containing:
