@@ -78,7 +78,7 @@ create table public.products (
   slug text not null unique,
   description text not null default '',
   price_minor integer not null check (price_minor >= 0),
-  currency text not null default 'USD' check (char_length(currency) = 3),
+  currency text not null default 'DZD' check (char_length(currency) = 3),
   gender text not null default 'unisex' check (gender in ('men', 'women', 'unisex')),
   category_id bigint references public.categories(id) on delete set null,
   stock_quantity integer not null default 0 check (stock_quantity >= 0),
@@ -143,7 +143,7 @@ create table public.orders (
   subtotal_minor integer not null default 0 check (subtotal_minor >= 0),
   delivery_fee_minor integer not null default 0 check (delivery_fee_minor >= 0),
   total_minor integer not null default 0 check (total_minor >= 0),
-  currency text not null default 'USD' check (char_length(currency) = 3),
+  currency text not null default 'DZD' check (char_length(currency) = 3),
   admin_notes text,
   created_by uuid references public.profiles(id) on delete set null,
   confirmed_at timestamptz,
@@ -470,7 +470,7 @@ begin
   update public.orders
   set subtotal_minor = v_subtotal,
       total_minor = v_subtotal,
-      currency = coalesce(v_currency, 'USD')
+      currency = coalesce(v_currency, 'DZD')
   where id = v_order_id;
 
   insert into public.order_status_history (
@@ -491,7 +491,7 @@ begin
     'cash_status', 'cash_outstanding',
     'subtotal_minor', v_subtotal,
     'total_minor', v_subtotal,
-    'currency', coalesce(v_currency, 'USD')
+    'currency', coalesce(v_currency, 'DZD')
   );
 end;
 $$;

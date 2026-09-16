@@ -1,4 +1,4 @@
-const currency = process.env.REACT_APP_CURRENCY || "USD";
+const currency = process.env.REACT_APP_CURRENCY || "DZD";
 const locale = process.env.REACT_APP_LOCALE || "en-US";
 
 export const storeConfig = {

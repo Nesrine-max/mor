@@ -118,7 +118,7 @@ Existing browser storage keys:
 
 ## Important findings and known problems
 
-1. The hosted Supabase project is linked and deployed, but the catalogue is empty until products and categories are entered.
+1. The hosted Supabase project is linked and deployed; one category and one product now exist, but the catalogue is incomplete and the current product has zero stock until the real inventory is entered.
 2. One Supabase Auth user is now promoted to `admin`; the user still needs to sign in once through the live admin page to complete the browser-level verification.
 3. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
 4. The home page uses Picsum placeholder category images.
@@ -169,7 +169,7 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 7. Done: deploy `create-order` and `update-order-status`; keep the former guest-accessible and the latter JWT-protected.
 8. Done: validate public catalogue reads, guest-order validation, and the protected admin endpoint against the hosted project.
 9. Done: create the first administrator in Supabase Auth and promote that user's profile role to `admin` through the linked CLI.
-10. Add categories/products and configure real images, currency, contact details, and delivery rules.
+10. Add the remaining categories/products and real images; DZD is configured, while contact details and delivery rules still need confirmation.
 11. Done: add the `product-images` storage bucket and admin image policies; test a real upload after admin setup.
 12. Complete a real website order and admin-created order test, including status transitions, stock reservation/release, and cash/delivery tracking.
 13. Replace placeholder images and complete product/image management.
@@ -313,6 +313,13 @@ After implementation begins, record every relevant command and result here. A fa
 - Verified password login succeeds with the public Supabase client and the profile returns `role=admin`.
 - Verified the protected `update-order-status` function accepts the authenticated admin session and returns its expected `Order ID is required` validation response for an empty request.
 - The temporary password was returned only to the user; it is not recorded in this handoff.
+
+### 2026-09-16 - DZD configuration and hosted end-to-end smoke suite
+
+- Changed the frontend default, example environment, Vercel production/preview environment, database defaults, and fresh-install migration fallback to `DZD`.
+- Applied hosted migration `0006_currency_dzd.sql`.
+- Ran a temporary hosted fixture suite and removed all fixtures afterward. It passed: temporary admin creation/login, admin-only image upload plus public image read, DZD catalogue reads, customer website order creation, CORS, server-side totals, invalid-size rejection, insufficient-stock rejection, guest offline-order rejection, order status progression, delivery progression, cash collection, stock reservation/consumption/release, status history, and public order isolation.
+- The remaining hosted catalogue records are user-created, not test fixtures; the existing product currency was updated from `USD` to `DZD` without changing its price or stock.
 
 ## How to update this handoff
 

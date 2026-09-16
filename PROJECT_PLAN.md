@@ -2,7 +2,7 @@
 
 ## 1. Product definition
 
-Implementation status: Phase 0 is implemented, the hosted Phase 1 Supabase database/storage/order foundation is deployed, the Phase 2 Supabase data-layer/Auth adapter is wired behind environment flags, and the React frontend is deployed to Vercel. The app is not production-ready yet because the first admin, real catalogue, and full live order test remain.
+Implementation status: Phase 0 is implemented, the hosted Phase 1 Supabase database/storage/order foundation is deployed, the Phase 2 Supabase data-layer/Auth adapter is wired behind environment flags, the currency is configured as DZD, and the React frontend is deployed to Vercel. The app is not production-ready yet because the catalogue is incomplete, business contact/delivery details are missing, and the real live order test remains.
 
 MOR should become a customer-facing clothing catalogue and an offline order-operations system.
 

@@ -41,7 +41,7 @@ The order flow records requests for real-life cash fulfilment. It does not proce
 
    ```dotenv
 REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_CURRENCY=USD
+REACT_APP_CURRENCY=DZD
 REACT_APP_LOCALE=en-US
 # Optional: use the Supabase data layer instead of the legacy API.
 REACT_APP_SUPABASE_URL=

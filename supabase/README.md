@@ -60,4 +60,4 @@ For a leaked legacy `service_role` key, create the new secret key first, verify 
 - The migration and functions are deployed, but the full website-to-admin order flow still needs live testing with real catalogue records.
 - A real admin upload still needs to be tested after the first admin account is promoted.
 - Supabase's remaining advisor warning concerns the managed `public.rls_auto_enable()` helper, not MOR's application functions or policies.
-- Real product data, images, currency, contact details, and delivery rules still need to be configured.
+- DZD is configured for the first market. Real product data/images, contact details, and delivery rules still need to be completed.
