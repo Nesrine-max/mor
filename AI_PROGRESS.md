@@ -338,6 +338,13 @@ After implementation begins, record every relevant command and result here. A fa
 - Real-browser verification passed on Vercel: Women shows 15 pieces, Men shows 8, Sportswear shows 3, a seeded product detail can be added to the bag, the cart and cash order-request form show DZD totals, and the tested pages report zero console errors or warnings.
 - Current blockers remain business-owned: replace demo data/images with MOR's real inventory, provide contact/delivery details, run real customer/admin order tests, and rotate any legacy service key after verifying the replacement key path.
 
+### 2026-09-16 - Completed-order error diagnosis and frontend fix
+
+- Investigated the reported `Edge Function returned a non-2xx status code` message against the hosted order records. The affected order `MOR-20260916-CA867B` is already `completed`, its inventory is `consumed`, and its history contains the `pending` → `completed` transition; the completion transaction did succeed.
+- The frontend was discarding the Edge Function response body and displaying only Supabase's generic SDK error message. Updated `src/api.js` to read the function error response and show the actionable backend message when a request genuinely fails.
+- Rebuilt and redeployed the frontend to the stable Vercel alias. Live admin login page verification reports zero console errors/warnings; the completed order and existing pending order were left untouched.
+- The exact transient trigger cannot be recovered from the database alone; if it recurs, the new UI message will identify whether it is authentication, stock, or an order-state problem. Supabase's hosted invocation/runtime logs remain the authoritative next diagnostic source for a true 5xx response.
+
 ## How to update this handoff
 
 After each work session, add a dated entry containing:

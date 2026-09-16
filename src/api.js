@@ -196,7 +196,20 @@ async function getOrders() {
 async function invokeFunction(name, body, fallback) {
   const { data, error } = await supabase.functions.invoke(name, { body });
   if (error) {
-    throw apiError(error.message || fallback, error.status || 500, error);
+    let message = error.message || fallback;
+    const response = error.context;
+
+    if (response) {
+      try {
+        const readableResponse = typeof response.clone === "function" ? response.clone() : response;
+        const responseBody = await readableResponse.json();
+        message = responseBody?.error || responseBody?.message || message;
+      } catch {
+        // Keep the SDK message when the function did not return JSON.
+      }
+    }
+
+    throw apiError(message, response?.status || error.status || 500, error);
   }
   return { data };
 }
