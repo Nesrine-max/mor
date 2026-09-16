@@ -119,7 +119,7 @@ Existing browser storage keys:
 ## Important findings and known problems
 
 1. The hosted Supabase project is linked and deployed, but the catalogue is empty until products and categories are entered.
-2. A first Supabase Auth user still needs to be created and promoted from `staff` to `admin` before the admin panel can be used.
+2. One Supabase Auth user is now promoted to `admin`; the user still needs to sign in once through the live admin page to complete the browser-level verification.
 3. The React data layer supports Supabase when both public environment variables are present and falls back to the legacy Axios API otherwise.
 4. The home page uses Picsum placeholder category images.
 5. Product image storage and admin upload support are deployed; the first real upload still needs testing after an admin account is promoted.
@@ -168,7 +168,7 @@ Stock is reserved transactionally when an order moves into confirmation/preparat
 6. Done: authenticate the CLI, link project `fsstqthwpzeypxdasdjo`, and apply migrations `0001` through `0005`.
 7. Done: deploy `create-order` and `update-order-status`; keep the former guest-accessible and the latter JWT-protected.
 8. Done: validate public catalogue reads, guest-order validation, and the protected admin endpoint against the hosted project.
-9. Create the first administrator in Supabase Auth, then update that user's profile role to `admin` through the SQL editor.
+9. Done: create the first administrator in Supabase Auth and promote that user's profile role to `admin` through the linked CLI.
 10. Add categories/products and configure real images, currency, contact details, and delivery rules.
 11. Done: add the `product-images` storage bucket and admin image policies; test a real upload after admin setup.
 12. Complete a real website order and admin-created order test, including status transitions, stock reservation/release, and cash/delivery tracking.
@@ -299,6 +299,13 @@ After implementation begins, record every relevant command and result here. A fa
 - Updated both Supabase Edge Functions to prefer the hosted `SUPABASE_SECRET_KEYS["default"]` map, with `SUPABASE_SECRET_KEY` and legacy `SUPABASE_SERVICE_ROLE_KEY` fallbacks for compatibility.
 - Redeployed `create-order` and `update-order-status` to the linked project; the guest order validation/CORS check still passes with HTTP 400 and the production origin.
 - The user can now create the new secret key in Supabase `Project Settings` → `API Keys`, test the live functions, and deactivate the exposed legacy `service_role` key without requiring a code change.
+
+### 2026-09-16 - First admin promotion
+
+- Queried the hosted Auth/profile records and found two confirmed users; did not guess between them.
+- Promoted the user identified by the requested `zinounew123` account to `admin` through `supabase db query --linked`.
+- Verified hosted counts: `users=2`, `admins=1`, `categories=0`, `products=0`, and `orders=0`.
+- Remaining user action: sign in at `https://mor-ashen.vercel.app/admin/login`, then add the real catalogue or provide the catalogue data for CLI import.
 
 ## How to update this handoff
 

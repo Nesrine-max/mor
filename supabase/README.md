@@ -56,7 +56,7 @@ For a leaked legacy `service_role` key, create the new secret key first, verify 
 
 ## Not finished yet
 
-- The first Supabase Auth user still needs to be promoted from the default `staff` profile role to `admin`.
+- One Supabase Auth user is promoted to `admin`; the live admin sign-in and first real product upload still need to be tested.
 - The migration and functions are deployed, but the full website-to-admin order flow still needs live testing with real catalogue records.
 - A real admin upload still needs to be tested after the first admin account is promoted.
 - Supabase's remaining advisor warning concerns the managed `public.rls_auto_enable()` helper, not MOR's application functions or policies.
