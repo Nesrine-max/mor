@@ -16,6 +16,10 @@ export default function Navbar() {
     api.get("/categories").then((res) => setCategories(res.data)).catch(() => {});
   }, []);
 
+  const womenCategories = categories.filter((c) => c.gender === "women");
+  const menCategories = categories.filter((c) => c.gender === "men");
+  const homeCategories = categories.filter((c) => c.gender === "home");
+
   return (
     <header className="navbar">
       <div className="navbar-inner">
@@ -40,7 +44,7 @@ export default function Navbar() {
             </NavLink>
             <div className="mega-menu">
               <div className="mega-menu-inner">
-                {categories.map((c) => (
+                {womenCategories.map((c) => (
                   <Link key={c.id} to={`/shop/women?category=${c.slug}`}>
                     {c.name}
                   </Link>
@@ -55,7 +59,7 @@ export default function Navbar() {
             </NavLink>
             <div className="mega-menu">
               <div className="mega-menu-inner">
-                {categories.map((c) => (
+                {menCategories.map((c) => (
                   <Link key={c.id} to={`/shop/men?category=${c.slug}`}>
                     {c.name}
                   </Link>
@@ -64,9 +68,20 @@ export default function Navbar() {
             </div>
           </div>
 
-          <NavLink to="/shop/unisex" className={({ isActive }) => (isActive ? "active" : "")}>
-            Sportswear
-          </NavLink>
+          <div className="nav-item-has-menu" style={{ position: "relative" }}>
+            <NavLink to="/shop/home" className={({ isActive }) => (isActive ? "active" : "")}>
+              Home Stuff
+            </NavLink>
+            <div className="mega-menu">
+              <div className="mega-menu-inner">
+                {homeCategories.map((c) => (
+                  <Link key={c.id} to={`/shop/home?category=${c.slug}`}>
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </nav>
 
         <div className="nav-icons">

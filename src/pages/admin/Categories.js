@@ -4,10 +4,12 @@ import api from "../../api";
 export default function AdminCategories() {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
+  const [type, setType] = useState("women");
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
 
   async function loadCategories() {
     setLoading(true);
@@ -33,11 +35,12 @@ export default function AdminCategories() {
 
     try {
       if (editingId) {
-        await api.put(`/categories/${editingId}`, { name });
+        await api.put(`/categories/${editingId}`, { name, gender: type });
       } else {
-        await api.post("/categories", { name });
+        await api.post("/categories", { name, gender: type });
       }
       setName("");
+      setType("women");
       setEditingId(null);
       await loadCategories();
     } catch (err) {
@@ -60,7 +63,17 @@ export default function AdminCategories() {
   function startEdit(c) {
     setEditingId(c.id);
     setName(c.name);
+    setType(c.gender || "women");
   }
+
+  const filteredCategories = filter === "all" ? categories : categories.filter((c) => c.gender === filter);
+
+  const genderLabel = (gender) => {
+    if (gender === "women") return "Women";
+    if (gender === "men") return "Men";
+    if (gender === "home") return "Home Stuff";
+    return gender;
+  };
 
   return (
     <div>
@@ -71,6 +84,16 @@ export default function AdminCategories() {
       {error && <div className="error-text" role="alert" style={{ marginBottom: 20 }}>{error}</div>}
 
       <form onSubmit={handleSubmit} style={{ display: "flex", gap: 10, marginBottom: 30, maxWidth: 500 }}>
+        <select
+          className="form-control"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          required
+        >
+          <option value="women">Women</option>
+          <option value="men">Men</option>
+          <option value="home">Home Stuff</option>
+        </select>
         <input
           className="form-control"
           placeholder="e.g. Suits & Sets"
@@ -87,6 +110,7 @@ export default function AdminCategories() {
             onClick={() => {
               setEditingId(null);
               setName("");
+              setType("women");
             }}
           >
             Cancel
@@ -94,24 +118,36 @@ export default function AdminCategories() {
         )}
       </form>
 
+      <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+        {["all", "women", "men", "home"].map((g) => (
+          <button
+            key={g}
+            className={`btn ${filter === g ? "" : "btn-outline"}`}
+            onClick={() => setFilter(g)}
+          >
+            {g === "all" ? "All" : genderLabel(g)}
+          </button>
+        ))}
+      </div>
+
       <div className="admin-table-wrap">
       <table className="admin-table">
         <thead>
           <tr>
             <th>Name</th>
-            <th>Slug</th>
+            <th>Type</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           {loading && <tr><td colSpan="3" className="empty-state">Loading categories...</td></tr>}
-          {!loading && categories.length === 0 && (
+          {!loading && filteredCategories.length === 0 && (
             <tr><td colSpan="3" className="empty-state">No categories yet. Add the first one above.</td></tr>
           )}
-          {!loading && categories.map((c) => (
+          {!loading && filteredCategories.map((c) => (
             <tr key={c.id}>
               <td>{c.name}</td>
-              <td>{c.slug}</td>
+              <td>{genderLabel(c.gender)}</td>
               <td>
                 <button className="icon-btn" onClick={() => startEdit(c)}>
                   Edit

@@ -16,7 +16,7 @@ export default function Footer() {
             <h4>Shop</h4>
             <Link to="/shop/women">Women</Link>
             <Link to="/shop/men">Men</Link>
-            <Link to="/shop/unisex">Sportswear</Link>
+            <Link to="/shop/home">Home Stuff</Link>
           </div>
           <div>
             <h4>Help</h4>

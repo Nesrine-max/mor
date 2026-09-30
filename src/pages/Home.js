@@ -3,16 +3,17 @@ import { Link } from "react-router-dom";
 import api from "../api";
 import ProductCard from "../components/ProductCard";
 
-const FEATURED_CATEGORIES = [
-  { slug: "t-shirts", name: "T-Shirts", img: "https://picsum.photos/seed/mor-tshirts/600/750" },
-  { slug: "jackets-and-coats", name: "Jackets & Coats", img: "https://picsum.photos/seed/mor-jackets/600/750" },
-  { slug: "sportswear", name: "Sportswear", img: "https://picsum.photos/seed/mor-sport/600/750" },
+const GENDERS = [
+  { key: "women", label: "Women" },
+  { key: "men", label: "Men" },
+  { key: "home", label: "Home Stuff" },
 ];
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState("");
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     api
@@ -27,6 +28,13 @@ export default function Home() {
         setCatalogLoading(false);
         setCatalogError("Featured products will appear once the catalogue is connected.");
       });
+  }, []);
+
+  useEffect(() => {
+    api
+      .get("/categories")
+      .then((res) => setCategories(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setCategories([]));
   }, []);
 
   return (
@@ -49,12 +57,15 @@ export default function Home() {
         <h2 className="section-title">Shop by Category</h2>
         <p className="section-subtitle">Curated staples, season after season</p>
         <div className="category-grid">
-          {FEATURED_CATEGORIES.map((c) => (
-            <Link key={c.slug} to={`/shop/women?category=${c.slug}`} className="category-card">
-              <img src={c.img} alt={c.name} />
-              <div className="category-card-label">{c.name}</div>
-            </Link>
-          ))}
+          {GENDERS.map((g) => {
+            const groupCategories = categories.filter((c) => c.gender === g.key);
+            if (groupCategories.length === 0) return null;
+            return groupCategories.map((c) => (
+              <Link key={c.slug} to={`/shop/${g.key}?category=${c.slug}`} className="category-card">
+                <div className="category-card-label">{c.name}</div>
+              </Link>
+            ));
+          })}
         </div>
       </section>
 

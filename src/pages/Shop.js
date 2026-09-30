@@ -6,7 +6,7 @@ import ProductCard from "../components/ProductCard";
 const GENDER_LABELS = {
   women: "Women",
   men: "Men",
-  unisex: "Sportswear",
+  home: "Home Stuff",
 };
 
 export default function Shop() {
@@ -54,7 +54,7 @@ export default function Shop() {
     let mounted = true;
 
     api
-      .get("/categories")
+      .get("/categories", { params: { gender } })
       .then((response) => {
         if (mounted) setCategories(Array.isArray(response.data) ? response.data : []);
       })
@@ -65,7 +65,7 @@ export default function Shop() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [gender]);
 
   const visibleProducts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();

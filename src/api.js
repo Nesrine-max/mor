@@ -37,6 +37,8 @@ function normalizeSizes(value) {
     .filter(Boolean);
 }
 
+const CATEGORY_GENDERS = ["men", "women", "home"];
+
 function slugify(value) {
   return String(value || "")
     .trim()
@@ -69,13 +71,22 @@ function productPayload(product) {
     description: String(product.description || ""),
     price_minor: Math.round(price * 100),
     currency: product.currency || storeConfig.currency,
-    gender: product.gender || "unisex",
+    gender: product.gender || "women",
     category_id: product.category_id ? Number(product.category_id) : null,
     stock_quantity: Number(product.stock ?? product.stock_quantity ?? 0),
     sizes: normalizeSizes(product.sizes),
     featured: Boolean(product.featured),
     active: product.active === undefined ? true : Boolean(product.active),
     image_url: product.image_url || null,
+  };
+}
+
+function categoryPayload(body) {
+  const gender = body.gender || "women";
+  return {
+    name: String(body.name || "").trim(),
+    gender,
+    slug: gender + "-" + slugify(body.name),
   };
 }
 
@@ -119,8 +130,19 @@ export async function uploadProductImage(file, productId = "draft") {
   return data.publicUrl;
 }
 
-async function getCategories() {
-  const { data, error } = await supabase.from("categories").select("*").order("sort_order").order("name");
+async function getCategories(config = {}) {
+  const params = config.params || {};
+  let query = supabase
+    .from("categories")
+    .select("*")
+    .order("sort_order")
+    .order("name");
+
+  if (params.gender) {
+    query = query.eq("gender", params.gender);
+  }
+
+  const { data, error } = await query;
   throwIfError(error, "Could not load categories");
   return { data: data || [] };
 }
@@ -215,7 +237,7 @@ async function invokeFunction(name, body, fallback) {
 }
 
 async function supabaseGet(path, config) {
-  if (path === "/categories") return getCategories();
+  if (path === "/categories") return getCategories(config);
   if (path === "/products") return getProducts(config);
   if (path.startsWith("/products/")) return getProduct(path.split("/")[2]);
   if (path === "/orders") return getOrders();
@@ -238,7 +260,7 @@ async function supabasePost(path, body) {
   if (path === "/categories") {
     const { data, error } = await supabase
       .from("categories")
-      .insert({ name: String(body.name || "").trim(), slug: slugify(body.name) })
+      .insert(categoryPayload(body))
       .select("*")
       .single();
     throwIfError(error, "Could not create category");
@@ -276,7 +298,7 @@ async function supabasePut(path, body) {
   if (categoryMatch) {
     const { data, error } = await supabase
       .from("categories")
-      .update({ name: String(body.name || "").trim(), slug: slugify(body.name) })
+      .update(categoryPayload(body))
       .eq("id", categoryMatch[1])
       .select("*")
       .single();

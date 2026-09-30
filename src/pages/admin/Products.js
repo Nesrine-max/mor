@@ -9,7 +9,7 @@ const EMPTY_FORM = {
   description: "",
   price: "",
   image_url: "",
-  gender: "unisex",
+  gender: "women",
   category_id: "",
   stock: 0,
   sizes: "S,M,L,XL",
@@ -188,6 +188,18 @@ export default function AdminProducts() {
 
           <div className="form-row">
             <div className="form-group">
+              <label>Gender</label>
+              <select
+                className="form-control"
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value, category_id: "" })}
+              >
+                <option value="women">Women</option>
+                <option value="men">Men</option>
+                <option value="home">Home Stuff</option>
+              </select>
+            </div>
+            <div className="form-group">
               <label>Category</label>
               <select
                 className="form-control"
@@ -196,23 +208,13 @@ export default function AdminProducts() {
                 onChange={(e) => setForm({ ...form, category_id: e.target.value })}
               >
                 <option value="">Select category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Gender</label>
-              <select
-                className="form-control"
-                value={form.gender}
-                onChange={(e) => setForm({ ...form, gender: e.target.value })}
-              >
-                <option value="men">Men</option>
-                <option value="women">Women</option>
-                <option value="unisex">Unisex / Sportswear</option>
+                {categories
+                  .filter((c) => c.gender === form.gender)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>

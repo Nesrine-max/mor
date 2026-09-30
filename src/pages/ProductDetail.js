@@ -95,6 +95,11 @@ export default function ProductDetail() {
           <button className="btn" onClick={handleAdd} disabled={!canAdd}>
             {added ? "Added to Bag ✓" : stock > 0 ? "Add to Bag" : "Unavailable"}
           </button>
+          {added && (
+            <Link to="/cart" className="btn" style={{ marginLeft: 10 }}>
+              View my bag →
+            </Link>
+          )}
         </div>
       </div>
     </div>
