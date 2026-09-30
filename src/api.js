@@ -83,11 +83,10 @@ function productPayload(product) {
 
 function categoryPayload(body) {
   const gender = body.gender || "women";
-  return {
-    name: String(body.name || "").trim(),
-    gender,
-    slug: gender + "-" + slugify(body.name),
-  };
+  const name = String(body.name || "").trim();
+  const slugBase = slugify(body.name) || "category";
+  const slug = `${gender}-${slugBase}`.replace(/--+/g, "-");
+  return { name, gender, slug };
 }
 
 const PRODUCT_IMAGE_TYPES = {
@@ -263,7 +262,20 @@ async function supabasePost(path, body) {
       .insert(categoryPayload(body))
       .select("*")
       .single();
-    throwIfError(error, "Could not create category");
+
+    if (error) {
+      let message = "Could not create category.";
+      if (error.code === "23505") {
+        const lower = (error.message || "").toLowerCase();
+        if (lower.includes("gender, name") || lower.includes("categories_gender_name")) {
+          message = "A category with this name already exists for the selected type.";
+        } else if (lower.includes("slug") || lower.includes("categories_slug")) {
+          message = "A category with this name already exists.";
+        }
+      }
+      throw apiError(message, error.status || 409, error);
+    }
+
     return { data };
   }
 

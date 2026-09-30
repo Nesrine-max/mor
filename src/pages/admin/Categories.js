@@ -29,7 +29,20 @@ export default function AdminCategories() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!name.trim()) return;
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError("Please enter a category name.");
+      return;
+    }
+
+    const duplicate = categories.find(
+      (c) => c.name.toLowerCase() === trimmedName.toLowerCase() && c.gender === type
+    );
+    if (duplicate) {
+      setError("A category with this name already exists for the selected type.");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
@@ -98,7 +111,10 @@ export default function AdminCategories() {
           className="form-control"
           placeholder="e.g. Suits & Sets"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (error) setError("");
+          }}
         />
         <button className="btn" type="submit" disabled={saving}>
           {saving ? "Saving..." : editingId ? "Update" : "Add"}
