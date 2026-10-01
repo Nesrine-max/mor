@@ -16,8 +16,8 @@ export default function AdminLayout() {
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <span className="logo">
-          M<span>O</span>R
+        <span className="logo brand-mor">
+          Mor
         </span>
         <nav className="admin-nav">
           <NavLink to="/admin/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>

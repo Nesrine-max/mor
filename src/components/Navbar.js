@@ -24,7 +24,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="navbar-inner">
         <Link to="/" className="logo">
-          <span className="brand-mor">M</span><span>O</span><span className="brand-mor">R</span>
+          <span className="brand-mor">Mor</span>
         </Link>
 
         <button

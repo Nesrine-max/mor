@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="footer-grid">
           <div>
             <h4 className="logo brand-mor" style={{ fontSize: 24 }}>
-              MOR
+              Mor
             </h4>
             <p>Contemporary essentials for men and women. Designed to last, made to move.</p>
           </div>
@@ -31,7 +31,7 @@ export default function Footer() {
             <Link to="/admin/login">Admin</Link>
           </div>
         </div>
-        <div className="footer-bottom">© {new Date().getFullYear()} <span className="brand-mor">MOR</span>. All rights reserved.</div>
+        <div className="footer-bottom">© {new Date().getFullYear()} <span className="brand-mor">Mor</span>. All rights reserved.</div>
       </div>
     </footer>
   );
