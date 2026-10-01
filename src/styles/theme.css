@@ -123,6 +123,11 @@ button {
   letter-spacing: 0;
 }
 
+.logo {
+  font-size: 48px;
+  text-decoration: none;
+}
+
 .nav-links {
   display: flex;
   gap: 30px;
