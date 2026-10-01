@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div>
-            <h4 className="logo" style={{ fontSize: 24 }}>
+            <h4 className="logo brand-mor" style={{ fontSize: 24 }}>
               MOR
             </h4>
             <p>Contemporary essentials for men and women. Designed to last, made to move.</p>
@@ -26,12 +26,12 @@ export default function Footer() {
           </div>
           <div>
             <h4>Company</h4>
-            <a href="#!">About Mor</a>
+            <a href="#!">About <span className="brand-mor">Mor</span></a>
             <a href="#!">Contact</a>
             <Link to="/admin/login">Admin</Link>
           </div>
         </div>
-        <div className="footer-bottom">© {new Date().getFullYear()} MOR. All rights reserved.</div>
+        <div className="footer-bottom">© {new Date().getFullYear()} <span className="brand-mor">MOR</span>. All rights reserved.</div>
       </div>
     </footer>
   );

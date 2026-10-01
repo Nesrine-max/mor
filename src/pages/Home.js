@@ -44,7 +44,7 @@ export default function Home() {
           <div className="hero-eyebrow">New Season</div>
           <h1 className="hero-title">Wear the moment.</h1>
           <p className="hero-text">
-            Mor is contemporary clothing built for everyday movement — clean lines, rich tones,
+            <span className="brand-mor">Mor</span> is contemporary clothing built for everyday movement — clean lines, rich tones,
             made for men and women who don't follow trends.
           </p>
           <Link to="/shop/women" className="btn">
