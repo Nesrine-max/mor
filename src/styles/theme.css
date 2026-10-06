@@ -120,7 +120,8 @@ button {
   font-weight: 700;
   font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
   color: var(--burgundy-light);
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
+  font-size: 64px;
 }
 
 .logo {
